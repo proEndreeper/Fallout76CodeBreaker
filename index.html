@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Fallout 76 Nuclear Code Breaker</title>
+		<script src="jquery.min.js"></script>
+		<script src="jquery.inputmask.bundle.min.js"></script>
+		<script src="index.js"></script>
+		<link rel="stylesheet" type="text/css" href="index.css"/>
+	</head>
+	<body>
+		<div class="main">
+			<img style="margin:0 100px;" width=400 src="logo.png"/>
+			<hr />
+			<div id="warningText"></div>
+			<form class="mono" id="nukeCodes">
+				<h1>Known Cipher</h1>
+				<input type="text" maxlength=11 class="cipherKeyword bad" data-inputmask="'alias': 'cipher'" name="kCipher" placeholder="Known Cipher">
+				<h1>Code Pieces</h1>
+				<input type="text" class="launchCode bad" data-inputmask="'alias': 'launchCode'" name="kCode0">
+				<input type="text" class="launchCode bad" data-inputmask="'alias': 'launchCode'" name="kCode1">
+				<input type="text" class="launchCode bad" data-inputmask="'alias': 'launchCode'" name="kCode2">
+				<input type="text" class="launchCode bad" data-inputmask="'alias': 'launchCode'" name="kCode3"><br />
+				<input type="text" class="launchCode bad" data-inputmask="'alias': 'launchCode'" name="kCode4">
+				<input type="text" class="launchCode bad" data-inputmask="'alias': 'launchCode'" name="kCode5">
+				<input type="text" class="launchCode bad" data-inputmask="'alias': 'launchCode'" name="kCode6">
+				<input type="text" class="launchCode bad" data-inputmask="'alias': 'launchCode'" name="kCode7"><br />
+				<hr />
+				<button class="breakCode">Break Nuclear Code</button>
+			</form>
+			<hr />
+			<div class="status">Status: <span id="statusText"></span></div>
+			<div class="progbar" state="done"><div style="width:0" class="proginner"></div></div><span class="mono" id="progressPercent"></span>
+			<hr />
+			<div class="resultBody mono">
+				Encoded Anagram: <span id="encodedAnagram"></span>
+				<h2>CODES</h2>
+				<div id="listLaunchCodes"></div>
+				<h2>KEYWORDS </h2>
+				<div id="listKeywords"></div>
+			</div>
+		</div>
+		<span class="pps"><span id="ppsCurrent">0</span>&nbsp;perms/second</span>
+		<span class="workers">Max Workers: <span id="workersMax">1</span></span>
+	</body>
+</html>

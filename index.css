@@ -1,0 +1,159 @@
+body {
+	background:#82A7D6;
+	color:white;
+}
+.main {
+  margin:0 auto;
+  max-width:600px;
+  min-height:200px;
+  /*border:1px solid #447AB9;*/
+}
+
+hr {
+	color:white;
+}
+
+form {
+	margin:0 auto;
+	width:400px;
+}
+
+.cipherKeyword {
+	width:100%;
+}
+
+input:focus { 
+	outline:thick solid rgba(0,0,0,0.3);
+}
+
+.mono, input {
+	font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
+}
+
+input {
+	font-size:2em;
+}
+
+input.bad {
+	border:4px inset #600;
+}
+
+input.good {
+	border:4px inset #060;
+}
+
+.launchCode {
+	width:72px;
+	margin:0 4px;
+	margin-bottom:8px;
+	text-align:center;
+}
+
+.breakCode {
+	background:#5A80AE;
+	border:4px inset #325886;
+	font-size:20pt;
+	margin-left:12.5%;
+	padding:2px;
+	width:75%;
+}
+
+.breakCode:hover {
+	outline:thick solid rgba(0,0,0,0.3);
+	background:#447AB9;
+}
+
+.breakCode:active {
+	background:#325886;
+	border:4px inset #447AB9;
+}
+
+.resultBody {
+	margin:auto;
+	width:508px;
+}
+
+h2 {
+	line-height:1.2em;
+}
+
+#listKeywords
+{
+	font-size:9pt;
+}
+
+.keyword[state="notstarted"]
+{
+	color:#600;
+}
+
+.keyword[state="inprogress"]
+{
+	color:#660;
+}
+
+.keyword[state="done"]
+{
+	color:#060;
+}
+
+.progbar {
+	display:inline-block;
+	width:100%;
+	height:2em;
+	background:#325886;
+	outline:4px solid #447AB9;
+}
+
+.progbar > .proginner {
+	max-width:100%;
+	min-width:0;
+	height:100%;
+	background:#FEF265;
+	transition:width 0.01s ease-in-out;
+}
+
+.progbar[state="done"] > .proginner {
+	background:#FFFF33;
+}
+
+.progbar[state="ready"] > .proginner {
+	background:#FFFFCC;
+}
+
+.status {
+	width:85%;
+	margin:0 3%;
+	margin-bottom:3pt;
+	font-size:1em;
+}
+
+#progressPercent {
+	font-size:1em;
+	vertical-align: middle;
+	line-height:2em;
+	position:absolute;
+	right:calc((100% - 600px)/2 + 5px);
+	top:inherit;
+	mix-blend-mode: difference;
+}
+
+.pps {
+	font-size:1em;
+	position:absolute;
+	top:8px;
+	right:8px;
+}
+
+.workers {
+	font-size:1em;
+	position:absolute;
+	top:calc(1.25em + 8px);
+	right:8px;
+}
+
+#warningText
+{
+	margin-left:2em;
+	color:#FF6;
+}
