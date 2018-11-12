@@ -5,6 +5,7 @@
 		<script src="jquery.min.js"></script>
 		<script src="jquery.inputmask.bundle.min.js"></script>
 		<script src="index.js"></script>
+		<meta name="author" content="Devon Schneider (ProxEndreeeper)">
 		<link rel="stylesheet" type="text/css" href="index.css"/>
 	</head>
 	<body>
@@ -14,8 +15,10 @@
 			<div id="warningText"></div>
 			<form class="mono" id="nukeCodes">
 				<h1>Known Cipher</h1>
+				<p>This is the word you can see parts of in the Enclave base, please replace missing letters with a question mark (?).</p>
 				<input type="text" maxlength=11 class="cipherKeyword bad" data-inputmask="'alias': 'cipher'" name="kCipher" placeholder="Known Cipher">
 				<h1>Code Pieces</h1>
+				<p>Please type up all of your code pieces here.</p>
 				<input type="text" class="launchCode bad" data-inputmask="'alias': 'launchCode'" name="kCode0">
 				<input type="text" class="launchCode bad" data-inputmask="'alias': 'launchCode'" name="kCode1">
 				<input type="text" class="launchCode bad" data-inputmask="'alias': 'launchCode'" name="kCode2">
@@ -25,6 +28,7 @@
 				<input type="text" class="launchCode bad" data-inputmask="'alias': 'launchCode'" name="kCode6">
 				<input type="text" class="launchCode bad" data-inputmask="'alias': 'launchCode'" name="kCode7"><br />
 				<hr />
+				<p>Click this once you have finished.</p>
 				<button class="breakCode">Break Nuclear Code</button>
 			</form>
 			<hr />
