@@ -311,6 +311,7 @@ $(function(){
             }
             e.target.classList.add("bad");
           }
+          updateShareLink();
         }
       },
       'cipher': {
@@ -330,12 +331,13 @@ $(function(){
             }
             e.target.classList.add("bad");
           }
+          updateShareLink();
         }
       }
     });
     Inputmask().mask(document.querySelectorAll("input"));
 
-    $('input').change(()=>{
+    $('form,input').change(()=>{
       updateShareLink();
     });
 
@@ -363,6 +365,7 @@ $(function(){
             console.log("Not enough content to scroll :'( (%d<%d)",$(document).height()-topOfContent,$(window).height());
           }
         },500);
+        updateShareLink();
         start = Date.now();
         $(".info > p").show();
         keywordCount=0;
