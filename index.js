@@ -151,7 +151,7 @@ $(function(){
     $("#statusText").html(txt);
   }
 
-  keywordsPerRow=Math.floor(400/$("<span class="keyword" state="notstarted">ABCDEFGH</span>").width());
+  keywordsPerRow=Math.floor(400/$("<span class=\"keyword\" state=\"notstarted\">ABCDEFGH</span>").width());
 
   function updateKeyword(keyword,state)
   {
