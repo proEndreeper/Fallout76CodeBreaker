@@ -121,6 +121,8 @@ $(function(){
     return eAnagram;
   }
 
+  var keywordsPerRow = 6;
+
   var start = -1;
 
   window.getStart=function(){return start};
@@ -148,6 +150,8 @@ $(function(){
   {
     $("#statusText").html(txt);
   }
+
+  keywordsPerRow=Math.floor(400/$("<span class="keyword" state="notstarted">ABCDEFGH</span>").width());
 
   function updateKeyword(keyword,state)
   {
@@ -195,8 +199,9 @@ $(function(){
       keywordsDone = 0;
       for(i=0;i<kwords.length;i++)
       {
-        out+=`<span class="keyword" data-keyword="${kwords[i]}" state="notstarted">${kwords[i].toUpperCase()}</span>${((i%6!==5)?" ":"")}`;
-        if(i%6===5) {
+        out+=`<span class="keyword" data-keyword="${kwords[i]}" state="notstarted">${kwords[i].toUpperCase()}</span>`+
+             `${((i%keywordsPerRow!==keywordsPerRow-1)?" ":"")}`;
+        if(i%keywordsPerRow===keywordsPerRow-1) {
           out+="<br />";
         }
       }

@@ -3,10 +3,12 @@
 	<head>
 		<title>Fallout 76 Nuclear Code Breaker</title>
 		<script src="base64.js"></script>
+		<script src="js.cookie-2.2.0.min.js"></script>
 		<script src="jquery.min.js"></script>
 		<script src="jquery.inputmask.bundle.min.js"></script>
 		<script src="index.js"></script>
 		<link rel="stylesheet" type="text/css" href="index.css"/>
+		<!-- Metadata -->
 		<meta name="title" content="Fallout 76 Code Breaker">
 		<meta name="description" content="Figures out what your nuclear launch code is from 8 silo code pieces and a portion of the keyword from the Enclave bunker.">
 		<meta name="keywords" content="fallout 76,fallout,76,code,breaker,solver,cracker,silo,code,piece,keyword,solver,proxendreeper">
@@ -42,6 +44,26 @@
 		  gtag('js', new Date());
 
 		  gtag('config', 'UA-129145730-1');
+
+		  window['ga-disable-UA-129145730-1'] = true;
+		  function showOptout()
+		  {
+			window['ga-disable-UA-129145730-1'] = true;
+
+			if(confirm("Opt out of Google Analytics on this website?\n\nNote:\nClicking Cancel opts you back in if you were previousing opted out of Google Analytics."))
+		  	{
+		  		Cookies.set('optoutGA',true,{expires:7});
+		  	} else {
+		  		Cookies.set('optoutGA',false,{expires:7});
+		  	}
+
+			if(Cookies.get('optoutGA')=="false") {
+			  window['ga-disable-UA-129145730-1'] = false;
+		    }
+
+		    $("#optOutStatus").html(Cookies.get('optoutGA')=="true"?"(Opted out)":"(Opted in)");
+		    $("#optOutStatus").attr("state",Cookies.get('optoutGA')=="true"?"yes":"no");
+		  }
 		</script>
 	</head>
 	<body>
@@ -91,5 +113,19 @@
 		<div class="socialbuttons">
 			<a title="Github" target="fo76codebreaker-github" href="https://github.com/proEndreeper/Fallout76CodeBreaker"><span style="background-image:url(github.png)"></span></a>
 		</div>
+		<div class="optOut"><a onclick="showOptout()" href="#"><span>Analytics Opt-Out</span></a>&nbsp;<span id="optOutStatus"></span></div>
+		<script>
+		  if(typeof Cookies.get('optoutGA') === 'undefined')
+		  {
+		  	Cookies.set('optoutGA',true);
+		  }
+
+		  if(Cookies.get('optoutGA')=="false") {
+		    window['ga-disable-UA-129145730-1'] = false;
+	      }
+
+		  $("#optOutStatus").html(Cookies.get('optoutGA')=="true"?"(Opted out)":"(Opted in)");
+		  $("#optOutStatus").attr("state",Cookies.get('optoutGA')=="true"?"yes":"no");
+		</script>
 	</body>
 </html>

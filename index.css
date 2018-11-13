@@ -133,8 +133,10 @@ h2 {
 	vertical-align: middle;
 	line-height:2em;
 	position:absolute;
-	right:calc((100% - 600px)/2 + 5px);
+	right:0;
 	top:inherit;
+	width:100%;
+	text-align:center;
 	mix-blend-mode: difference;
 }
 
@@ -172,15 +174,31 @@ h2 {
 	background-size:contain;
 }
 
-textarea[name=shareLink] {
-	white-space: nowrap;
-	overflow:hidden;
-	font-size:14pt;
-	resize:none;
-	width:100%;
-	height:calc(14pt);
-}
-
 pre {
 	margin:0;
+}
+
+.optOut {
+	position:fixed;
+	left:8px;
+	bottom:8px;
+}
+
+.optOut > a {
+	color:#FF6;
+	text-decoration: none;
+}
+
+.optOut:hover > a {
+	text-decoration: underline;
+}
+
+#optOutStatus
+{
+	color:#6FF;
+}
+
+#optOutStatus[state="yes"]
+{
+	color:#66F;
 }
