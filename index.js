@@ -40,11 +40,11 @@ $(function(){
 
   function isCodeDuplicate(code_id)
   {
-    var used = parseInt($("input[name=kCode"+code_id+"]").val().substr(2),10),code;
+    var used = $("input[name=kCode"+code_id+"]").val().substr(0,1),code;
     for(var i=0;i<8;i++)
     {
       if(i==code_id) continue;
-      code = parseInt($("input[name=kCode"+i+"]").val().substr(2),10);
+      code = $("input[name=kCode"+i+"]").val().substr(0,1);
       if(used == code)
       {
         return true;
@@ -56,10 +56,10 @@ $(function(){
   function areCodesGood()
   {
     var code;
-    var used = new Uint8Array(8);
+    var used = {};
     for(var i=0;i<8;i++)
     {
-      code = parseInt($("input[name=kCode"+i+"]").val().substr(2),10);
+      code = $("input[name=kCode"+i+"]").val().substr(0,1);
       if(used[code])
       {
         return false;
@@ -71,65 +71,8 @@ $(function(){
 
   function isValidNukeCode(field,tid)
   {
-    return NUKECODE_REGEX.test(field.val()) && !isCodeDuplicate(tid) && parseInt(field.val().substr(2))<8;
+    return NUKECODE_REGEX.test(field.val()) && !isCodeDuplicate(tid) && parseInt(field.val().substr(2))<10;
   }
-
-  var keywordProg = {};
-
-  $(document).ready(function(){
-    if(!browserMeta.isChromiumBased) 
-    {
-      $("#warningText").html("<span style='color:#C00'>Warning:</span><br />"+
-                             "This application works best in a chromium based browser.<br />"+
-                             "This is due to how they handle WebWorkers.<br />"+
-                             "Expect mild freezing of the window");
-    }
-    Inputmask.extendAliases({
-      'launchCode': {
-        autoUnmask:false,
-        mask:"a-9",
-        oncomplete:function(e)
-        {
-          var tid = parseInt(e.target.name.substr(5));
-          e.target.value = e.target.value.toUpperCase();
-          if(isValidNukeCode($(e.target),tid)) {
-            if(e.target.classList.contains("bad")) {
-              e.target.classList.remove("bad");
-            }
-            e.target.classList.add("good");
-            if(tid!=7) {
-              $("input[name=kCode"+(tid+1)+"]").focus();
-            }
-          } else {
-            if(e.target.classList.contains("good")) {
-              e.target.classList.remove("good");
-            }
-            e.target.classList.add("bad");
-          }
-        }
-      },
-      'cipher': {
-        autoUnmask:true,
-        regex: "[A-Za-z\?][A-Za-z\?][A-Za-z\?][A-Za-z\?][A-Za-z\?][A-Za-z\?][A-Za-z\?][A-Za-z\?][A-Za-z\?][A-Za-z\?][A-Za-z\?]",
-        oncomplete:function(e)
-        {
-          e.target.value = e.target.value.toUpperCase();
-          if(isValidKeywordFilter(e.target.value)) {
-            if(e.target.classList.contains("bad")) {
-              e.target.classList.remove("bad");
-            }
-            e.target.classList.add("good");
-          } else {
-            if(e.target.classList.contains("good")) {
-              e.target.classList.remove("good");
-            }
-            e.target.classList.add("bad");
-          }
-        }
-      }
-    });
-    Inputmask().mask(document.querySelectorAll("input"));
-  });
 
   function updateProgress(curr,max)
   {
@@ -149,6 +92,35 @@ $(function(){
     }
   }
 
+  function processCode(code)
+  {
+      var origCode = "";
+      var i,cde;
+      var repoCode = "";
+      for(i=0;i<8;i++)
+      {
+        cde = $("input[name=kCode"+i+"]").val().substr(2)
+        origCode += !isNaN(parseInt(cde,10))?cde:i.toString();
+      }
+
+      for(i=0;i<8;i++)
+      {
+        repoCode += origCode[parseInt(code[i],10)];
+      }
+
+      return repoCode;
+  }
+
+  function getEncodedAnagram()
+  {
+    var i,eAnagram = "";
+    for(i=0;i<8;i++)
+    {
+      eAnagram += $("input[name=kCode"+i+"]").val().substr(0,1);
+    }
+    return eAnagram;
+  }
+
   var start = -1;
 
   window.getStart=function(){return start};
@@ -157,15 +129,17 @@ $(function(){
 
   function updateDynamicProgress()
   {
+    var timestamp;
     var max = keywordCount;
-
     var sum = keywordsDone;
 
-    if(sum===0) {
-      start = Date.now();
-    }
+    timestamp = (Date.now()-start)/1000;
 
-    $("#ppsCurrent").html(Math.ceil((sum*MAX_PERMUTATIONS)/((Date.now()-start)/1000)));
+    $("#ppsCurrent").html(Math.ceil((sum*MAX_PERMUTATIONS)/timestamp));
+
+    $(".timeCurrent").html(timestamp.toFixed(3)+"s");
+    $(".keywordsDone").html(sum);
+    $(".keywordsTotal").html(max);
 
     updateProgress(sum,max);
   }
@@ -241,7 +215,6 @@ $(function(){
     {
       keywordsDone++;
       updateKeyword(msg.params[0],"done");
-      keywordProg[msg.params[0]] = MAX_PERMUTATIONS;
       updateDynamicProgress();
       setStatus(`Keyword '${msg.params[0]}' finished.`);
     } else 
@@ -263,7 +236,8 @@ $(function(){
 
       codeWorker.postMessage({cmd:"OPT",params:["max_workers",workerCount]});
       setStatus(`Benchmark finished! Max number of workers: ${workerCount}`);
-      $("#workersMax").html(workerCount);
+      $(".workers").show();
+      $(".workersMax").html(workerCount);
       setTimeout(()=>{
         setStatus("Ready!");
         updateProgress(0,0);
@@ -276,8 +250,8 @@ $(function(){
       var code = msg.params[1];
       var keyword = msg.params[0];
       console.log("New code '%s' was discovered from keyword '%s'!",code.num,keyword);
-      $("#listLaunchCodes").append(`<span>'${code.word}'[${keyword}] produced the code '${code.num}'</span><br />`);
-      setStatus(`Code! ${code.word}[${keyword}]: '${code.text}' (${code.num}).`);
+      $("#listLaunchCodes").append(`<span>'${code.word}'[${keyword}] produced the code '${processCode(code.num)}'</span><br />`);
+      setStatus(`Code! ${code.word}[${keyword}]: '${code.text}' (${processCode(code.num)}).`);
     } else
 
     if(msg.cmd == "DONE")
@@ -306,43 +280,261 @@ $(function(){
     console.log(ev);
   });
 
-  $('form').submit(function(){
-    if(!ready)
+  $(document).ready(function(){
+    if(!browserMeta.isChromiumBased) 
     {
-      alert("Please wait for the program to finish benchmarking.");
-      return false;
+      $("#warningText").html("<span style='color:#C00'>Warning:</span><br />"+
+                             "This application works best in a chromium based browser.<br />"+
+                             "This is due to how they handle WebWorkers.<br />"+
+                             "Expect mild freezing of the application during extensive<br />"+
+                             "work (e.g. more than double your workers in keywords)");
     }
-    if(working)
-    {
-      alert("Please wait for the current code breaking to finish, or refresh the page.");
-      return false;
-    }
-    var keyword = $(".cipherKeyword").val();
-    if(isValidKeywordFilter(keyword) && areCodesGood())
-    {
-      keywordCount=0;
-      keywordProg={};
-      $("#listLaunchCodes").html("");
-      $("#listKeywords").html("");
-      $(".cipherKeyword").prop("disabled",true);
-      $(".progbar").attr("state","inprogress");
-      $(".launchCode").prop("disabled",true);
-      var eAnagram = [];
-      for(var i=0,code;i<8;i++)
-      {
-        code = parseInt($("input[name=kCode"+i+"]").val().substr(2),10);
-        eAnagram[code] = $("input[name=kCode"+i+"]").val().substr(0,1);
+    Inputmask.extendAliases({
+      'launchCode': {
+        autoUnmask:false,
+        mask:"a-9",
+        oncomplete:function(e)
+        {
+          var tid = parseInt(e.target.name.substr(5));
+          e.target.value = e.target.value.toUpperCase();
+          if(isValidNukeCode($(e.target),tid)) {
+            if(e.target.classList.contains("bad")) {
+              e.target.classList.remove("bad");
+            }
+            e.target.classList.add("good");
+            if(tid!=7) {
+              $("input[name=kCode"+(tid+1)+"]").focus();
+            }
+          } else {
+            if(e.target.classList.contains("good")) {
+              e.target.classList.remove("good");
+            }
+            e.target.classList.add("bad");
+          }
+        }
+      },
+      'cipher': {
+        autoUnmask:true,
+        regex: "[A-Za-z\?][A-Za-z\?][A-Za-z\?][A-Za-z\?][A-Za-z\?][A-Za-z\?][A-Za-z\?][A-Za-z\?][A-Za-z\?][A-Za-z\?][A-Za-z\?]",
+        oncomplete:function(e)
+        {
+          e.target.value = e.target.value.toUpperCase();
+          if(isValidKeywordFilter(e.target.value)) {
+            if(e.target.classList.contains("bad")) {
+              e.target.classList.remove("bad");
+            }
+            e.target.classList.add("good");
+          } else {
+            if(e.target.classList.contains("good")) {
+              e.target.classList.remove("good");
+            }
+            e.target.classList.add("bad");
+          }
+        }
       }
-      $("#encodedAnagram").html(eAnagram.join("").toUpperCase());
-      codeWorker.postMessage({id:"test",cmd:"DECODE",params:[keyword.toLowerCase(),eAnagram.join("").toLowerCase()]});
-      working = true;
-    } else {
-      alert("Please check your code pieces to make sure none of them have the same number and check to ensure you have a valid keyword.");
-    }
-    return false;
+    });
+    Inputmask().mask(document.querySelectorAll("input"));
+
+    $('input').change(()=>{
+      updateShareLink();
+    });
+
+    $('form').submit(function(ev){
+      ev.preventDefault();
+      ev.stopPropagation();
+      if(!ready)
+      {
+        alert("Please wait for the program to finish benchmarking.");
+        return false;
+      }
+      if(working)
+      {
+        alert("Please wait for the current code breaking to finish, or refresh the page.");
+        return false;
+      }
+      var keyword = $(".cipherKeyword").val();
+      if(isValidKeywordFilter(keyword) && areCodesGood())
+      {
+        setTimeout(()=>{
+          var topOfContent = $("a[name='workProgress']").offset().top;
+          if($(document).height()-topOfContent>=$(window).height()) {
+            $('html,body').animate({scrollTop: topOfContent},1500);
+          } else {
+            console.log("Not enough content to scroll :'( (%d<%d)",$(document).height()-topOfContent,$(window).height());
+          }
+        },500);
+        start = Date.now();
+        $(".info > p").show();
+        keywordCount=0;
+        $("#listLaunchCodes").html("");
+        $("#listKeywords").html("");
+        $(".cipherKeyword").prop("disabled",true);
+        $(".progbar").attr("state","inprogress");
+        $(".launchCode").prop("disabled",true);
+        var eAnagram = getEncodedAnagram();
+        $("#encodedAnagram").html(eAnagram.toUpperCase());
+        codeWorker.postMessage({id:"test",cmd:"DECODE",params:[keyword.toLowerCase(),eAnagram.toLowerCase()]});
+        working = true;
+      } else {
+        alert("Please check your code pieces to make sure none of them have the same number and check to ensure you have a valid keyword.");
+      }
+      return false;
+    });
   });
 
-  function fillForm(cipher,code,donotsubmit)
+  function generateShareLink()
+  {
+    var cipher = $(".cipherKeyword").val();
+    var numbers = processCode("01234567");
+    var code = getEncodedAnagram();
+    var shortVersion = "";
+    var i;
+    var bytes = new Uint8Array(7+4+5);
+    // Cipher
+    bytes[0] =  ((cipher.charCodeAt(0) & 0x1F) << 3) |
+                ((cipher.charCodeAt(1) & 0x1C) >> 2);
+    bytes[1] =  ((cipher.charCodeAt(1) & 0x03) << 6) |
+                ((cipher.charCodeAt(2) & 0x1F) << 1) |
+                ((cipher.charCodeAt(3) & 0x10) >> 4);
+    bytes[2] =  ((cipher.charCodeAt(3) & 0x0F) << 4) |
+                ((cipher.charCodeAt(4) & 0x1E) >> 1);
+    bytes[3] =  ((cipher.charCodeAt(4) & 0x01) << 7) |
+                ((cipher.charCodeAt(5) & 0x1F) << 2) |
+                ((cipher.charCodeAt(6) & 0x18) >> 3);
+    bytes[4] =  ((cipher.charCodeAt(6) & 0x07) << 5) |
+                ((cipher.charCodeAt(7) & 0x1F) << 0);
+    bytes[5] =  ((cipher.charCodeAt(8) & 0x1F) << 3) |
+                ((cipher.charCodeAt(9) & 0x1C) >> 2);
+    bytes[6] =  ((cipher.charCodeAt(9) & 0x03) << 6) |
+                ((cipher.charCodeAt(10) & 0x1F) << 1);
+    // Numbers
+    bytes[7] =  ((numbers.charCodeAt(0) & 0x0F) << 4) |
+                ((numbers.charCodeAt(1) & 0x0F) << 0);
+    bytes[8] =  ((numbers.charCodeAt(2) & 0x0F) << 4) |
+                ((numbers.charCodeAt(3) & 0x0F) << 0);
+    bytes[9] =  ((numbers.charCodeAt(4) & 0x0F) << 4) |
+                ((numbers.charCodeAt(5) & 0x0F) << 0);
+    bytes[10] = ((numbers.charCodeAt(6) & 0x0F) << 4) |
+                ((numbers.charCodeAt(7) & 0x0F) << 0);
+    // Code
+    bytes[11] = ((code.charCodeAt(0) & 0x1F) << 3) |
+                ((code.charCodeAt(1) & 0x1C) >> 2);
+    bytes[12] = ((code.charCodeAt(1) & 0x03) << 6) |
+                ((code.charCodeAt(2) & 0x1F) << 1) |
+                ((code.charCodeAt(3) & 0x10) >> 4);
+    bytes[13] = ((code.charCodeAt(3) & 0x0F) << 4) |
+                ((code.charCodeAt(4) & 0x1E) >> 1);
+    bytes[14] = ((code.charCodeAt(4) & 0x01) << 7) |
+                ((code.charCodeAt(5) & 0x1F) << 2) |
+                ((code.charCodeAt(6) & 0x18) >> 3);
+    bytes[15] = ((code.charCodeAt(6) & 0x07) << 5) |
+                ((code.charCodeAt(7) & 0x1F) << 0);
+
+    for(i=0;i<bytes.length;i++)
+    {
+      shortVersion+=String.fromCharCode(bytes[i]);
+    }
+
+    var protocol = window.location.protocol;
+    var base = window.location.host + window.location.pathname;
+    return `${protocol}//${base}?q=${Base64.encodeURI(shortVersion)}`;
+  }
+
+  window.generateShareLink=generateShareLink;
+
+  function updateShareLink()
+  {
+    var shareLink = generateShareLink();
+    $(".shareLink").html(shareLink);
+    $(".shareLink").attr("href",shareLink);
+  }
+
+  window.updateShareLink=updateShareLink;
+
+  function parseShareLinkCode(sharecode)
+  {
+    var qStr = Base64.decode(sharecode);
+    var i,bytes = [];
+    var cipher = "",numbers = "",code = "",ch;
+    for(i=0;i<qStr.length;i++)
+    {
+      bytes[i]=qStr.charCodeAt(i);
+    }
+    // Cipher
+    //0
+    ch = String.fromCharCode(0x40 | ((bytes[0]&0xF8) >> 3));
+    cipher += ch=="_"?"?":ch;
+    //1
+    ch = String.fromCharCode(0x40 | (((bytes[0]&0x07) << 2)|((bytes[1]&0xC0) >> 6)));
+    cipher += ch=="_"?"?":ch;
+    //1
+    ch = String.fromCharCode(0x40 | (((bytes[1]&0x3E) >> 1)));
+    cipher += ch=="_"?"?":ch;
+    //3
+    ch = String.fromCharCode(0x40 | (((bytes[1]&0x01) << 4)|((bytes[2]&0xF0) >> 4)));
+    cipher += ch=="_"?"?":ch;
+    //4
+    ch = String.fromCharCode(0x40 | (((bytes[2]&0x0F) << 1)|((bytes[3]&0x80) >> 7)));
+    cipher += ch=="_"?"?":ch;
+    //5
+    ch = String.fromCharCode(0x40 | (((bytes[3]&0x7C) >> 2)));
+    cipher += ch=="_"?"?":ch;
+    //6
+    ch = String.fromCharCode(0x40 | (((bytes[3]&0x03) << 3)|((bytes[4]&0xE0) >> 5)));
+    cipher += ch=="_"?"?":ch;
+    //7
+    ch = String.fromCharCode(0x40 | (bytes[4]&0x1F));
+    cipher += ch=="_"?"?":ch;
+    //8
+    ch = String.fromCharCode(0x40 | (((bytes[5]&0xF8) >> 3)));
+    cipher += ch=="_"?"?":ch;
+    //9
+    ch = String.fromCharCode(0x40 | (((bytes[5]&0x07) << 2)|((bytes[6]&0xC0) >> 6)));
+    cipher += ch=="_"?"?":ch;
+    //10
+    ch = String.fromCharCode(0x40 | (((bytes[6]&0x3E) >> 1)));
+    cipher += ch=="_"?"?":ch;
+
+    // Numbers
+    numbers += String.fromCharCode(0x30 | ((bytes[7]&0xF0) >> 4));
+    numbers += String.fromCharCode(0x30 | (bytes[7]&0x0F));
+    numbers += String.fromCharCode(0x30 | ((bytes[8]&0xF0) >> 4));
+    numbers += String.fromCharCode(0x30 | (bytes[8]&0x0F));
+    numbers += String.fromCharCode(0x30 | ((bytes[9]&0xF0) >> 4));
+    numbers += String.fromCharCode(0x30 | (bytes[9]&0x0F));
+    numbers += String.fromCharCode(0x30 | ((bytes[10]&0xF0) >> 4));
+    numbers += String.fromCharCode(0x30 | (bytes[10]&0x0F));
+
+    // Code
+    //0
+    ch = String.fromCharCode(0x40 | ((bytes[11]&0xF8) >> 3));
+    code += ch=="_"?"?":ch;
+    //1
+    ch = String.fromCharCode(0x40 | (((bytes[11]&0x07) << 2)|((bytes[12]&0xC0) >> 6)));
+    code += ch=="_"?"?":ch;
+    //1
+    ch = String.fromCharCode(0x40 | (((bytes[12]&0x3E) >> 1)));
+    code += ch=="_"?"?":ch;
+    //3
+    ch = String.fromCharCode(0x40 | (((bytes[12]&0x01) << 4)|((bytes[13]&0xF0) >> 4)));
+    code += ch=="_"?"?":ch;
+    //4
+    ch = String.fromCharCode(0x40 | (((bytes[13]&0x0F) << 1)|((bytes[14]&0x80) >> 7)));
+    code += ch=="_"?"?":ch;
+    //5
+    ch = String.fromCharCode(0x40 | (((bytes[14]&0x7C) >> 2)));
+    code += ch=="_"?"?":ch;
+    //6
+    ch = String.fromCharCode(0x40 | (((bytes[14]&0x03) << 3)|((bytes[15]&0xE0) >> 5)));
+    code += ch=="_"?"?":ch;
+    //7
+    ch = String.fromCharCode(0x40 | (bytes[15]&0x1F));
+    code += ch=="_"?"?":ch;
+
+    return {cipher:cipher,numbers:numbers,code:code};
+  }
+
+  function fillForm(cipher,code,numbers,donotsubmit)
   {
     el=$(".cipherKeyword").first();
     el.val(cipher.toUpperCase());
@@ -360,17 +552,16 @@ $(function(){
       }
       el.addClass("bad");
     }
-    $(".cipherKeyword").val();
     for(var i=0,el;i<8;i++) {
       el=$("input[name=kCode"+i+"]").first();
-      el.val(code[i].toUpperCase()+"-"+i);
+      el.val(code[i].toUpperCase()+"-"+(numbers[i]?numbers[i]:i));
       if(isValidNukeCode(el,i)){
         if(el.hasClass("bad")) {
           el.removeClass("bad");
         }
         el.addClass("good");
         if(i!=7) {
-          $("input[name=kCode"+(i+1)+"]").focus();
+          $(`input[name=kCode${i+1}]`).focus();
         }
       } else {
         if(el.hasClass("good")) {
@@ -379,6 +570,7 @@ $(function(){
         el.addClass("bad");
       }
     }
+    updateShareLink();
     if(!donotsubmit) {
       $("form").submit();
     }
@@ -406,6 +598,19 @@ $(function(){
 
   if($.QueryString["cipher"]!==undefined && $.QueryString["code"]!==undefined)
   {
-    fillForm($.QueryString["cipher"],$.QueryString["code"],true);
+    fillForm($.QueryString["cipher"],$.QueryString["code"],
+      ($.QueryString["numbers"]!==undefined)
+      ?
+      $.QueryString["numbers"]
+      :
+      "",true);
+  } else if($.QueryString["q"]) {
+    var dat = parseShareLinkCode($.QueryString["q"]);
+    console.log(dat.cipher,dat.numbers,dat.code);
+    fillForm(dat.cipher,dat.code,dat.numbers,true);
   }
+
+  $.getJSON("./keywords.json",data=>{
+    $(".keywordCount").html(data.length);
+  });
 });

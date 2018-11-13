@@ -3,6 +3,7 @@ Helps you decipher the Fallout 76 code pieces using parts of a keyword from the 
 
 ## Credits
 [Inputmask](https://github.com/RobinHerbots/Inputmask) jQuery plugin by [RobinHerbots](https://github.com/RobinHerbots)
+[Base64](https://github.com/dankogai/js-base64) Base64 encoder/decoder (used for generating share link codes) by [dankogai](https://github.com/dankogai)
 
 ## License
 Please see the [LICENSE.md](LICENSE.md)

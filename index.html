@@ -2,10 +2,20 @@
 <html>
 	<head>
 		<title>Fallout 76 Nuclear Code Breaker</title>
+		<script src="base64.js"></script>
 		<script src="jquery.min.js"></script>
 		<script src="jquery.inputmask.bundle.min.js"></script>
 		<script src="index.js"></script>
-		<meta name="author" content="Devon Schneider (ProxEndreeeper)">
+		<meta name="title" content="Fallout 76 Code Breaker">
+		<meta name="description" content="Figures out what your nuclear launch code is from 8 silo code pieces and a portion of the keyword from the Enclave bunker.">
+		<meta name="keywords" content="fallout 76,fallout,76,code,breaker,solver,cracker,silo,code,piece,keyword,solver,proxendreeper">
+		<meta name="author" content="Devon Schneider (ProxEndreeeper), fo76codebreaker@icyfyr.us">
+  		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="source-code" content="https://github.com/proEndreeper/Fallout76CodeBreaker">
+		<meta name="revisit-after" content="7 days">
+		<meta name="subject" content="Fallout 76 Code Breaker">
+		<meta name="language" content="EN">
+		<meta name="revised" content="2018-11-13T16:34:28.644Z">
 		<link rel="stylesheet" type="text/css" href="index.css"/>
 	</head>
 	<body>
@@ -16,6 +26,7 @@
 			<form class="mono" id="nukeCodes">
 				<h1>Known Cipher</h1>
 				<p>This is the word you can see parts of in the Enclave base, please replace missing letters with a question mark (?).</p>
+				<p>If you have a Nuclear Keycard and have all the code pieces, but don't know your keyword, just type all letters as question marks (?), this will take some time, as the application has to unscramble approximately <span class="keywordCount"></span> anagrams.</p>
 				<input type="text" maxlength=11 class="cipherKeyword bad" data-inputmask="'alias': 'cipher'" name="kCipher" placeholder="Known Cipher">
 				<h1>Code Pieces</h1>
 				<p>Please type up all of your code pieces here.</p>
@@ -28,22 +39,31 @@
 				<input type="text" class="launchCode bad" data-inputmask="'alias': 'launchCode'" name="kCode6">
 				<input type="text" class="launchCode bad" data-inputmask="'alias': 'launchCode'" name="kCode7"><br />
 				<hr />
-				<p>Click this once you have finished.</p>
+				<p>Click this once you have finished entering in your code pieces and your keyword.</p>
 				<button class="breakCode">Break Nuclear Code</button>
 			</form>
 			<hr />
+			<a name="workProgress"></a>
 			<div class="status">Status: <span id="statusText"></span></div>
 			<div class="progbar" state="done"><div style="width:0" class="proginner"></div></div><span class="mono" id="progressPercent"></span>
 			<hr />
 			<div class="resultBody mono">
-				Encoded Anagram: <span id="encodedAnagram"></span>
+				Share Link: <br />
+				<pre><a class="shareLink"></a></pre><br />
+				Encoded Anagram: <span id="encodedAnagram"></span><br />
+				Max Workers: <span class="workersMax"></span><br />
+				Time Elapsed: <span class="timeCurrent"></span><br />
 				<h2>CODES</h2>
 				<div id="listLaunchCodes"></div>
-				<h2>KEYWORDS </h2>
+				<h2>KEYWORDS <span class="keywordsDone">0</span>/<span class="keywordsTotal">0</span></h2>
 				<div id="listKeywords"></div>
 			</div>
 		</div>
-		<span class="pps"><span id="ppsCurrent">0</span>&nbsp;perms/second</span>
-		<span class="workers">Max Workers: <span id="workersMax">1</span></span>
+		<div class="info">
+			<p class="pps"><span id="ppsCurrent">0</span>&nbsp;permutations/second</p>
+		</div>
+		<div class="socialbuttons">
+			<a title="Github" target="fo76codebreaker-github" href="https://github.com/proEndreeper/Fallout76CodeBreaker"><span style="background-image:url(github.png)"></span></a>
+		</div>
 	</body>
 </html>

@@ -138,22 +138,49 @@ h2 {
 	mix-blend-mode: difference;
 }
 
-.pps {
+.info {
 	font-size:1em;
-	position:absolute;
-	top:8px;
+	position:fixed;
+	bottom:8px;
 	right:8px;
+	text-align:right;
 }
 
-.workers {
-	font-size:1em;
-	position:absolute;
-	top:calc(1.25em + 8px);
-	right:8px;
+.info > p {
+	margin:0;
+	display:none;
 }
 
 #warningText
 {
 	margin-left:2em;
 	color:#FF6;
+}
+
+.socialbuttons {
+	position:fixed;
+	top:8px;
+	left:8px;
+}
+
+.socialbuttons > a span {
+	display:inline-block;
+	width:1.25em;
+	height:1.25em;
+	margin:0.125em;
+	background-position:center;
+	background-size:contain;
+}
+
+textarea[name=shareLink] {
+	white-space: nowrap;
+	overflow:hidden;
+	font-size:14pt;
+	resize:none;
+	width:100%;
+	height:calc(14pt);
+}
+
+pre {
+	margin:0;
 }
