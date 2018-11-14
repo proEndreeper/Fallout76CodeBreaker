@@ -162,7 +162,6 @@ function closeMePlease()
 {
   if(done)
   {
-    console.log("CLOSE ME!");
     postMessage({id:ID,cmd:"DONE",params:[]});
   }
 }

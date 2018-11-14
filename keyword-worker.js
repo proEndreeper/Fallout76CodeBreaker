@@ -71,7 +71,7 @@ function findKeywords(filter)
 
   var kwords = keywords.filter(RegExp.prototype.test.bind(filterRegex));
 
-  return kwords;
+  return kwords.slice(0,2000);
 }
 
 var options = {max_workers:0,delay:0} ;
