@@ -67,21 +67,9 @@ function convertWord(word,cipher)
 function findKeywords(filter)
 {
 
-  var filterRegex = new RegExp(filter.replace(/\?/g,"[^"+filter.replace(/\?/g,"")+"]"));
+  var filterRegex = new RegExp(filter.replace(/\?+/g,(match)=>{return "[^"+filter.replace(/\?/g,"")+"]{"+match.length+",11}"}));
 
   var kwords = keywords.filter(RegExp.prototype.test.bind(filterRegex));
-
-  var i,used = {};
-
-  for(i=0;i<kwords.length;i++)
-  {
-    if(used[kwords[i]]) {
-      kwords.splice(i,1);
-      i--;
-      continue;
-    }
-    used[kwords[i]] = true;
-  }
 
   return kwords;
 }

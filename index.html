@@ -8,6 +8,9 @@
 		<script src="jquery.inputmask.bundle.min.js"></script>
 		<script src="index.js"></script>
 		<link rel="stylesheet" type="text/css" href="index.css"/>
+		<link rel="stylesheet" href="//use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+		<script src="jquery-ui.min.js"></script>
+		<link rel="stylesheet" type="text/css" href="jquery-ui.min.css"/>
 		<!-- Metadata -->
 		<meta name="title" content="Fallout 76 Code Breaker">
 		<meta name="description" content="Figures out what your nuclear launch code is from 8 silo code pieces and a portion of the keyword from the Enclave bunker.">
@@ -18,7 +21,7 @@
 		<meta name="revisit-after" content="7 days">
 		<meta name="subject" content="Fallout 76 Code Breaker">
 		<meta name="language" content="EN">
-		<meta name="revised" content="2018-11-13T16:34:28.644Z">
+		<meta name="revised" content="2018-11-14T16:35:41.858Z">
 		<link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
 		<link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
 		<link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
@@ -46,15 +49,17 @@
 		  gtag('config', 'UA-129145730-1');
 
 		  window['ga-disable-UA-129145730-1'] = true;
-		  function showOptout()
+		  function showOptout(event)
 		  {
+		  	event.preventDefault();
+		  	event.stopPropagation();
 			window['ga-disable-UA-129145730-1'] = true;
 
-			if(confirm("Opt out of Google Analytics on this website?\n\nNote:\nClicking Cancel opts you back in if you were previousing opted out of Google Analytics."))
+			if(confirm("Opt in to Google Analytics on this website?\n\nNote:\nClicking OK opts you in if you were previousing opted out of Google Analytics.\nDoing anything else will opt you out of analytics."))
 		  	{
-		  		Cookies.set('optoutGA',true,{expires:7});
-		  	} else {
 		  		Cookies.set('optoutGA',false,{expires:7});
+		  	} else {
+		  		Cookies.set('optoutGA',true,{expires:7});
 		  	}
 
 			if(Cookies.get('optoutGA')=="false") {
@@ -63,6 +68,7 @@
 
 		    $("#optOutStatus").html(Cookies.get('optoutGA')=="true"?"(Opted out)":"(Opted in)");
 		    $("#optOutStatus").attr("state",Cookies.get('optoutGA')=="true"?"yes":"no");
+		    return false;
 		  }
 		</script>
 	</head>
@@ -113,7 +119,49 @@
 		<div class="socialbuttons">
 			<a title="Github" target="fo76codebreaker-github" href="https://github.com/proEndreeper/Fallout76CodeBreaker"><span style="background-image:url(github.png)"></span></a>
 		</div>
-		<div class="optOut"><a onclick="showOptout()" href="#"><span>Analytics Opt-Out</span></a>&nbsp;<span id="optOutStatus"></span></div>
+		<div class="rsocialbuttons">
+			<a title="Info" target="fo76codebreaker-info" href="#" onclick="showDialog(event)"><span class="fas fa-info-circle"></span></a>
+		</div>
+		<div class="optOut"><a onclick="showOptout(event)" href="#"><span>Analytics Opt-In</span></a>&nbsp;<span id="optOutStatus"></span></div>
+		<div id="infoDialog">
+			<p>Requirements:</p>
+			<ul>
+				<li>have 8 code pieces for the same silo</li>
+				<li>have a Nuclear Keycard (to get into the silo)</li>
+			</ul>
+			<p>You have 8 code pieces, each defines a letter in an encoded anagram</p>
+
+			<p>A-0, B-6, D-8, F-2, H-8, O-1, P-6, X-1</p>
+			<p>This gives us the encoded engram "ABDFHOPX"</p>
+
+			<p>You then will have a keyword that is slowly displayed to you over time in the Enclave bunker once you can figure out the full keyword, you can decipher your encoded anagram which is basically just the letters from the code pieces.</p>
+
+			<p>To decipher your anagram, first make a cipher, which is basically the keyword followed by the remaining letters of the alphabet, so for example "DESIGNATORY" would produce the following cipher</p>
+
+			<pre>DESIGNATORYBCFHJKLMPQUVWXZ
+ABCDEFGHIJKLMNOPQRSTUVWXYZ</pre>
+
+			<p>You can then take the letters from your encoded anagram and swap them from the cipher table, so a D becomes an A, a G becomes a E, etc.</p>
+
+			<pre class="no-background">So if your encoded anagram is ABDFHOPX,
+ you get a decoded anagram of GLANOITY</pre>
+
+			<p>You then unscramble the decoded anagram and get ANTILOGY, which is the code, but we need it in numbers in order to launch the nuke.</p>
+
+			<p>So, then you need to convert each letter back to the original key piece.</p>
+
+<pre>D-8 A
+F-2 N
+P-6 T
+O-1 I
+B-6 L
+H-8 O
+A-0 G
+X-1 Y</pre>
+
+			<p>You then just need to read down the numbers from the top to get your nuclear launch code</p>
+			<p>In this case, the nuclear launch code is 82616801</p>
+		</div>
 		<script>
 		  if(typeof Cookies.get('optoutGA') === 'undefined')
 		  {

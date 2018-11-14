@@ -12,7 +12,7 @@ $(function(){
   }
 
   const NUKECODE_REGEX = /^([a-z])\-([0-9])$/i;
-  const KEYWORD_REGEX = /^[a-z\?][a-z\?][a-z\?][a-z\?][a-z\?][a-z\?][a-z\?][a-z\?][a-z\?][a-z\?][a-z\?]$/i
+  const KEYWORD_REGEX = /^[a-z\?]+$/i
 
   function alluniq(str)
   {
@@ -320,11 +320,10 @@ $(function(){
         }
       },
       'cipher': {
-        autoUnmask:true,
-        regex: "[A-Za-z\?][A-Za-z\?][A-Za-z\?][A-Za-z\?][A-Za-z\?][A-Za-z\?][A-Za-z\?][A-Za-z\?][A-Za-z\?][A-Za-z\?][A-Za-z\?]",
+        autoUnmask:false,
+        regex: "[A-Za-z\?]{3,12}",
         oncomplete:function(e)
         {
-          e.target.value = e.target.value.toUpperCase();
           if(isValidKeywordFilter(e.target.value)) {
             if(e.target.classList.contains("bad")) {
               e.target.classList.remove("bad");
@@ -388,6 +387,37 @@ $(function(){
       }
       return false;
     });
+
+    $('#infoDialog').dialog({
+      dialogClass: "no-close",
+      buttons: [
+        {
+          text: "OK",
+          click: function() {
+            $( this ).dialog( "close" );
+          }
+        }
+      ],
+      title:"How this application finds the nuclear codes.",
+      width:600,
+      maxHeight:400,
+      modal:true,
+      position:{
+        my:"center",
+        at:"center",
+        of:window
+      }
+    });
+
+    $("#infoDialog").dialog("close");
+
+    window.showDialog = function(ev)
+    {
+      ev.preventDefault();
+      ev.stopPropagation();
+      $("#infoDialog").dialog("open");
+      return false;
+    }
   });
 
   function generateShareLink()
@@ -397,7 +427,11 @@ $(function(){
     var code = getEncodedAnagram();
     var shortVersion = "";
     var i;
-    var bytes = new Uint8Array(7+4+5);
+    var bytes = new Uint8Array(8+4+5);
+    while(cipher.length<12)
+    {
+      cipher+=String.fromCharCode(0);
+    }
     // Cipher
     bytes[0] =  ((cipher.charCodeAt(0) & 0x1F) << 3) |
                 ((cipher.charCodeAt(1) & 0x1C) >> 2);
@@ -414,28 +448,30 @@ $(function(){
     bytes[5] =  ((cipher.charCodeAt(8) & 0x1F) << 3) |
                 ((cipher.charCodeAt(9) & 0x1C) >> 2);
     bytes[6] =  ((cipher.charCodeAt(9) & 0x03) << 6) |
-                ((cipher.charCodeAt(10) & 0x1F) << 1);
+                ((cipher.charCodeAt(10) & 0x1F) << 1) |
+                ((cipher.charCodeAt(11) & 0x10) >> 4);
+    bytes[7] =  ((cipher.charCodeAt(11) & 0x0F) << 4);
     // Numbers
-    bytes[7] =  ((numbers.charCodeAt(0) & 0x0F) << 4) |
+    bytes[8] =  ((numbers.charCodeAt(0) & 0x0F) << 4) |
                 ((numbers.charCodeAt(1) & 0x0F) << 0);
-    bytes[8] =  ((numbers.charCodeAt(2) & 0x0F) << 4) |
+    bytes[9] =  ((numbers.charCodeAt(2) & 0x0F) << 4) |
                 ((numbers.charCodeAt(3) & 0x0F) << 0);
-    bytes[9] =  ((numbers.charCodeAt(4) & 0x0F) << 4) |
+    bytes[10] =  ((numbers.charCodeAt(4) & 0x0F) << 4) |
                 ((numbers.charCodeAt(5) & 0x0F) << 0);
-    bytes[10] = ((numbers.charCodeAt(6) & 0x0F) << 4) |
+    bytes[11] = ((numbers.charCodeAt(6) & 0x0F) << 4) |
                 ((numbers.charCodeAt(7) & 0x0F) << 0);
     // Code
-    bytes[11] = ((code.charCodeAt(0) & 0x1F) << 3) |
+    bytes[12] = ((code.charCodeAt(0) & 0x1F) << 3) |
                 ((code.charCodeAt(1) & 0x1C) >> 2);
-    bytes[12] = ((code.charCodeAt(1) & 0x03) << 6) |
+    bytes[13] = ((code.charCodeAt(1) & 0x03) << 6) |
                 ((code.charCodeAt(2) & 0x1F) << 1) |
                 ((code.charCodeAt(3) & 0x10) >> 4);
-    bytes[13] = ((code.charCodeAt(3) & 0x0F) << 4) |
+    bytes[14] = ((code.charCodeAt(3) & 0x0F) << 4) |
                 ((code.charCodeAt(4) & 0x1E) >> 1);
-    bytes[14] = ((code.charCodeAt(4) & 0x01) << 7) |
+    bytes[15] = ((code.charCodeAt(4) & 0x01) << 7) |
                 ((code.charCodeAt(5) & 0x1F) << 2) |
                 ((code.charCodeAt(6) & 0x18) >> 3);
-    bytes[15] = ((code.charCodeAt(6) & 0x07) << 5) |
+    bytes[16] = ((code.charCodeAt(6) & 0x07) << 5) |
                 ((code.charCodeAt(7) & 0x1F) << 0);
 
     for(i=0;i<bytes.length;i++)
@@ -475,7 +511,7 @@ $(function(){
     //1
     ch = String.fromCharCode(0x40 | (((bytes[0]&0x07) << 2)|((bytes[1]&0xC0) >> 6)));
     cipher += ch=="_"?"?":ch;
-    //1
+    //2
     ch = String.fromCharCode(0x40 | (((bytes[1]&0x3E) >> 1)));
     cipher += ch=="_"?"?":ch;
     //3
@@ -502,42 +538,47 @@ $(function(){
     //10
     ch = String.fromCharCode(0x40 | (((bytes[6]&0x3E) >> 1)));
     cipher += ch=="_"?"?":ch;
+    //11
+    ch = String.fromCharCode(0x40 | (((bytes[6]&0x01) << 4)|((bytes[7]&0xF0) >> 4)));
+    cipher += ch=="_"?"?":ch;
 
     // Numbers
-    numbers += String.fromCharCode(0x30 | ((bytes[7]&0xF0) >> 4));
-    numbers += String.fromCharCode(0x30 | (bytes[7]&0x0F));
     numbers += String.fromCharCode(0x30 | ((bytes[8]&0xF0) >> 4));
     numbers += String.fromCharCode(0x30 | (bytes[8]&0x0F));
     numbers += String.fromCharCode(0x30 | ((bytes[9]&0xF0) >> 4));
     numbers += String.fromCharCode(0x30 | (bytes[9]&0x0F));
     numbers += String.fromCharCode(0x30 | ((bytes[10]&0xF0) >> 4));
     numbers += String.fromCharCode(0x30 | (bytes[10]&0x0F));
+    numbers += String.fromCharCode(0x30 | ((bytes[11]&0xF0) >> 4));
+    numbers += String.fromCharCode(0x30 | (bytes[11]&0x0F));
 
     // Code
     //0
-    ch = String.fromCharCode(0x40 | ((bytes[11]&0xF8) >> 3));
+    ch = String.fromCharCode(0x40 | ((bytes[12]&0xF8) >> 3));
     code += ch=="_"?"?":ch;
     //1
-    ch = String.fromCharCode(0x40 | (((bytes[11]&0x07) << 2)|((bytes[12]&0xC0) >> 6)));
+    ch = String.fromCharCode(0x40 | (((bytes[12]&0x07) << 2)|((bytes[13]&0xC0) >> 6)));
     code += ch=="_"?"?":ch;
     //1
-    ch = String.fromCharCode(0x40 | (((bytes[12]&0x3E) >> 1)));
+    ch = String.fromCharCode(0x40 | (((bytes[13]&0x3E) >> 1)));
     code += ch=="_"?"?":ch;
     //3
-    ch = String.fromCharCode(0x40 | (((bytes[12]&0x01) << 4)|((bytes[13]&0xF0) >> 4)));
+    ch = String.fromCharCode(0x40 | (((bytes[13]&0x01) << 4)|((bytes[14]&0xF0) >> 4)));
     code += ch=="_"?"?":ch;
     //4
-    ch = String.fromCharCode(0x40 | (((bytes[13]&0x0F) << 1)|((bytes[14]&0x80) >> 7)));
+    ch = String.fromCharCode(0x40 | (((bytes[14]&0x0F) << 1)|((bytes[15]&0x80) >> 7)));
     code += ch=="_"?"?":ch;
     //5
-    ch = String.fromCharCode(0x40 | (((bytes[14]&0x7C) >> 2)));
+    ch = String.fromCharCode(0x40 | (((bytes[15]&0x7C) >> 2)));
     code += ch=="_"?"?":ch;
     //6
-    ch = String.fromCharCode(0x40 | (((bytes[14]&0x03) << 3)|((bytes[15]&0xE0) >> 5)));
+    ch = String.fromCharCode(0x40 | (((bytes[15]&0x03) << 3)|((bytes[16]&0xE0) >> 5)));
     code += ch=="_"?"?":ch;
     //7
-    ch = String.fromCharCode(0x40 | (bytes[15]&0x1F));
+    ch = String.fromCharCode(0x40 | (bytes[16]&0x1F));
     code += ch=="_"?"?":ch;
+
+    cipher = cipher.replace(/@/g,"");
 
     return {cipher:cipher,numbers:numbers,code:code};
   }
