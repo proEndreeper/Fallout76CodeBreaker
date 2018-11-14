@@ -39,7 +39,7 @@ fs.readFile(process.argv[2], 'utf8', function(err, contents)
 
   for(var i=0;i<data.length;i++)
   {
-    if(data[i].replace(/[^a-zA-Z]+/g,"")==data[i] && data[i].length>=1 && data[i].length<=12 && alluniq(data[i]))
+    if(data[i].replace(/[^a-zA-Z]+/g,"")==data[i] && data[i].length>=1 && data[i].length<=12 && alluniq(data[i]) && words.indexOf(data[i])<0)
     {
       count++;
       words.push(data[i].toLowerCase());
@@ -48,5 +48,5 @@ fs.readFile(process.argv[2], 'utf8', function(err, contents)
 
   fs.writeFileSync("keywords.json", JSON.stringify(words.sort()));
 
-  console.log("Found "+count+" 12-letter or less words!");
+  console.log("Found "+words.length+" 12-letter or less words!");
 });

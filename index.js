@@ -647,15 +647,42 @@ $(function(){
 
   if($.QueryString["cipher"]!==undefined && $.QueryString["code"]!==undefined)
   {
-    fillForm($.QueryString["cipher"],$.QueryString["code"],
-      ($.QueryString["numbers"]!==undefined)
+    var numbers = ($.QueryString["numbers"]!==undefined)
       ?
       $.QueryString["numbers"]
       :
-      "",true);
+      "01234567";
+    fillForm($.QueryString["cipher"],$.QueryString["code"],
+      numbers,true);
+    var kPieceStr = "";
+
+    for(var i=0;i<8;i++) {
+      kPieceStr+=$.QueryString["code"][i]+"-"+numbers[i]+(i<7?", ":"");
+    }
+    $('meta[name="description"]').attr("content",
+      "Cipher: "+$.QueryString["cipher"]+"\n"+
+      "Key Pieces: "+kPieceStr+"\n"+
+      "Figures out what your nuclear launch code is from 8 silo code pieces and a portion of the keyword from the Enclave bunker.");
+    $('meta[name="og:description"]').attr("content",
+      "Cipher: "+dat.cipher+"\n"+
+      "Key Pieces: "+kPieceStr+"\n"+
+      "Figures out what your nuclear launch code is from 8 silo code pieces and a portion of the keyword from the Enclave bunker.");
   } else if($.QueryString["q"]) {
     var dat = parseShareLinkCode($.QueryString["q"]);
     console.log(dat.cipher,dat.numbers,dat.code);
+    var kPieceStr = "";
+
+    for(var i=0;i<8;i++) {
+      kPieceStr+=dat.code[i]+"-"+dat.numbers[i]+(i<7?", ":"");
+    }
+    $('meta[name="description"]').attr("content",
+      "Cipher: "+dat.cipher+"\n"+
+      "Key Pieces: "+kPieceStr+"\n"+
+      "Figures out what your nuclear launch code is from 8 silo code pieces and a portion of the keyword from the Enclave bunker.");
+    $('meta[name="og:description"]').attr("content",
+      "Cipher: "+dat.cipher+"\n"+
+      "Key Pieces: "+kPieceStr+"\n"+
+      "Figures out what your nuclear launch code is from 8 silo code pieces and a portion of the keyword from the Enclave bunker.");
     fillForm(dat.cipher,dat.code,dat.numbers,true);
   }
 
