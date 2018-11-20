@@ -38,8 +38,10 @@ function generateCipher(keyword)
       used[(keyword.charCodeAt(i) & 0x1F)-1] = 1;
     }
   }
-  for(;i<26;i++)
+  for(i=0;i<26;i++)
   {
+    if(cipher[i]!==undefined)
+      continue;
     for(j=0;j<26;j++)
     {
       if(used[j] === 0)
@@ -67,11 +69,11 @@ function convertWord(word,cipher)
 function findKeywords(filter)
 {
 
-  var filterRegex = new RegExp(filter.replace(/\?+/g,(match)=>{return "[^"+filter.replace(/\?/g,"")+"]{"+match.length+",11}"}));
+  var filterRegex = new RegExp(filter.replace(/\?+/g,(match)=>{return "[^"+filter.replace(/\?/g,"")+"]{"+match.length+",16}"}));
 
   var kwords = keywords.filter(RegExp.prototype.test.bind(filterRegex));
 
-  return kwords.slice(0,2000);
+  return kwords;
 }
 
 var options = {max_workers:0,delay:0} ;
@@ -277,7 +279,9 @@ addEventListener("message",(ev)=>{
     {
       keyword = matchedKeywords[i];
       cipher  = generateCipher(keyword);
+      //console.log("Cipher for %s: %s",keyword,cipher.join(""));
       code = convertWord(eAnagram,cipher);
+      //console.log("Anagram for %s: %s",keyword,code);
       anagrams[keyword] = code;
       postMessage({cmd:"ANAGRAM",params:[keyword,code]});
       queue.push([keyword,code,eAnagram]);

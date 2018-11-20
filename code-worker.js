@@ -94,6 +94,10 @@ function setupUnscrambler()
         }
         callback(null);
       }
+      if(binarySearch(codes,word)>-1)
+      {
+        callback({num:genCode(word,word),word:word});
+      }
       permute(word);
     };
   } else {
@@ -130,7 +134,10 @@ function setupUnscrambler()
 
         doPermutation(i,permutation);
       }
-
+      if(binarySearch(codes,word)>-1)
+      {
+        callback({num:genCode(word,word),word:word});
+      }
       permute(word);
     };
   }

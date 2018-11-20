@@ -6,13 +6,13 @@ $(function(){
 
   var ready = false;
   if(typeof(Worker) === "undefined") {
-    alert("Sorry but this program requires the Worker class, and your browser doesn't seem to support this class.")
+    alert("Sorry but this program requires the Worker class, and your browser doesn't seem to support this class.");
 
     return;
   }
 
   const NUKECODE_REGEX = /^([a-z])\-([0-9])$/i;
-  const KEYWORD_REGEX = /^[a-z\?]+$/i
+  const KEYWORD_REGEX = /^[a-z\?]{10,16}$/i;
 
   function alluniq(str)
   {
@@ -35,7 +35,7 @@ $(function(){
 
   function isValidKeywordFilter(k)
   {
-    return KEYWORD_REGEX.test(k) && alluniq(k);
+    return KEYWORD_REGEX.test(k);// && alluniq(k);
   }
 
   function isCodeDuplicate(code_id)
@@ -143,6 +143,10 @@ $(function(){
     $(".keywordsDone").html(sum);
     $(".keywordsTotal").html(max);
 
+    if(sum==max) {
+      $(".keyword").attr("state","done");
+    }
+
     updateProgress(sum,max);
   }
 
@@ -151,10 +155,22 @@ $(function(){
     $("#statusText").html(txt);
   }
 
-  keywordsPerRow=Math.floor(400/$("<span class=\"keyword\" state=\"notstarted\">ABCDEFGH</span>").width());
+  function padKeyword(txt)
+  {
+    while(txt.length<16)
+    {
+      txt = " " + txt + " ";
+    }
+    return txt.substr(0,16).replace(/ /g,"&nbsp;");
+  }
+
+  keywordsPerRow=Math.floor(400/$("<span class=\"keyword\" state=\"notstarted\">ABCDEFGHIJKLMNOP</span>").width());
 
   function updateKeyword(keyword,state)
   {
+    if(keywordCount > 2000) {
+      return;
+    }
     var list = document.getElementsByClassName("keyword");
     var i,el;
     for(i=0;i<list.length;i++)
@@ -197,9 +213,11 @@ $(function(){
       var i,kwords = msg.params[0];
       keywordCount = kwords.length;
       keywordsDone = 0;
+      console.log("Found %d keywords.",keywordCount);
+      console.log("\t"+kwords.join("\n\t"));
       for(i=0;i<kwords.length;i++)
       {
-        out+=`<span class="keyword" data-keyword="${kwords[i]}" state="notstarted">${kwords[i].toUpperCase()}</span>`+
+        out+=`<span class="keyword" data-keyword="${kwords[i]}" state="${keywordCount<2000?"notstarted":"inprogress"}">${padKeyword(kwords[i].toUpperCase())}</span>`+
              `${((i%keywordsPerRow!==keywordsPerRow-1)?" ":"")}`;
         if(i%keywordsPerRow===keywordsPerRow-1) {
           out+="<br />";
@@ -321,7 +339,7 @@ $(function(){
       },
       'cipher': {
         autoUnmask:false,
-        regex: "[A-Za-z\?]{3,12}",
+        regex: "[A-Za-z\?]{10,16}",
         oncomplete:function(e)
         {
           if(isValidKeywordFilter(e.target.value)) {
@@ -427,8 +445,8 @@ $(function(){
     var code = getEncodedAnagram();
     var shortVersion = "";
     var i;
-    var bytes = new Uint8Array(8+4+5);
-    while(cipher.length<12)
+    var bytes = new Uint8Array(10+4+5);
+    while(cipher.length<16)
     {
       cipher+=String.fromCharCode(0);
     }
@@ -450,28 +468,34 @@ $(function(){
     bytes[6] =  ((cipher.charCodeAt(9) & 0x03) << 6) |
                 ((cipher.charCodeAt(10) & 0x1F) << 1) |
                 ((cipher.charCodeAt(11) & 0x10) >> 4);
-    bytes[7] =  ((cipher.charCodeAt(11) & 0x0F) << 4);
+    bytes[7] =  ((cipher.charCodeAt(11) & 0x0F) << 4) |
+                ((cipher.charCodeAt(12) & 0x1E) >> 1);
+    bytes[8] =  ((cipher.charCodeAt(12) & 0x01) << 7) |
+                ((cipher.charCodeAt(13) & 0x1F) << 2) |
+                ((cipher.charCodeAt(14) & 0x18) >> 3);
+    bytes[9] =  ((cipher.charCodeAt(14) & 0x07) << 5) |
+                ((cipher.charCodeAt(15) & 0x1F) << 0);
     // Numbers
-    bytes[8] =  ((numbers.charCodeAt(0) & 0x0F) << 4) |
+    bytes[10] = ((numbers.charCodeAt(0) & 0x0F) << 4) |
                 ((numbers.charCodeAt(1) & 0x0F) << 0);
-    bytes[9] =  ((numbers.charCodeAt(2) & 0x0F) << 4) |
+    bytes[11] = ((numbers.charCodeAt(2) & 0x0F) << 4) |
                 ((numbers.charCodeAt(3) & 0x0F) << 0);
-    bytes[10] =  ((numbers.charCodeAt(4) & 0x0F) << 4) |
+    bytes[12] = ((numbers.charCodeAt(4) & 0x0F) << 4) |
                 ((numbers.charCodeAt(5) & 0x0F) << 0);
-    bytes[11] = ((numbers.charCodeAt(6) & 0x0F) << 4) |
+    bytes[13] = ((numbers.charCodeAt(6) & 0x0F) << 4) |
                 ((numbers.charCodeAt(7) & 0x0F) << 0);
     // Code
-    bytes[12] = ((code.charCodeAt(0) & 0x1F) << 3) |
+    bytes[14] = ((code.charCodeAt(0) & 0x1F) << 3) |
                 ((code.charCodeAt(1) & 0x1C) >> 2);
-    bytes[13] = ((code.charCodeAt(1) & 0x03) << 6) |
+    bytes[15] = ((code.charCodeAt(1) & 0x03) << 6) |
                 ((code.charCodeAt(2) & 0x1F) << 1) |
                 ((code.charCodeAt(3) & 0x10) >> 4);
-    bytes[14] = ((code.charCodeAt(3) & 0x0F) << 4) |
+    bytes[16] = ((code.charCodeAt(3) & 0x0F) << 4) |
                 ((code.charCodeAt(4) & 0x1E) >> 1);
-    bytes[15] = ((code.charCodeAt(4) & 0x01) << 7) |
+    bytes[17] = ((code.charCodeAt(4) & 0x01) << 7) |
                 ((code.charCodeAt(5) & 0x1F) << 2) |
                 ((code.charCodeAt(6) & 0x18) >> 3);
-    bytes[16] = ((code.charCodeAt(6) & 0x07) << 5) |
+    bytes[18] = ((code.charCodeAt(6) & 0x07) << 5) |
                 ((code.charCodeAt(7) & 0x1F) << 0);
 
     for(i=0;i<bytes.length;i++)
@@ -541,41 +565,53 @@ $(function(){
     //11
     ch = String.fromCharCode(0x40 | (((bytes[6]&0x01) << 4)|((bytes[7]&0xF0) >> 4)));
     cipher += ch=="_"?"?":ch;
+    //12
+    ch = String.fromCharCode(0x40 | (((bytes[7]&0x0F) << 1)|((bytes[8]&0x80) >> 7)));
+    cipher += ch=="_"?"?":ch;
+    //13
+    ch = String.fromCharCode(0x40 | (((bytes[8]&0x7C) >> 2)));
+    cipher += ch=="_"?"?":ch;
+    //14
+    ch = String.fromCharCode(0x40 | (((bytes[8]&0x03) << 3)|((bytes[9]&0xE0) >> 5)));
+    cipher += ch=="_"?"?":ch;
+    //15
+    ch = String.fromCharCode(0x40 | (bytes[9]&0x1F));
+    cipher += ch=="_"?"?":ch;
 
     // Numbers
-    numbers += String.fromCharCode(0x30 | ((bytes[8]&0xF0) >> 4));
-    numbers += String.fromCharCode(0x30 | (bytes[8]&0x0F));
-    numbers += String.fromCharCode(0x30 | ((bytes[9]&0xF0) >> 4));
-    numbers += String.fromCharCode(0x30 | (bytes[9]&0x0F));
     numbers += String.fromCharCode(0x30 | ((bytes[10]&0xF0) >> 4));
     numbers += String.fromCharCode(0x30 | (bytes[10]&0x0F));
     numbers += String.fromCharCode(0x30 | ((bytes[11]&0xF0) >> 4));
     numbers += String.fromCharCode(0x30 | (bytes[11]&0x0F));
+    numbers += String.fromCharCode(0x30 | ((bytes[12]&0xF0) >> 4));
+    numbers += String.fromCharCode(0x30 | (bytes[12]&0x0F));
+    numbers += String.fromCharCode(0x30 | ((bytes[13]&0xF0) >> 4));
+    numbers += String.fromCharCode(0x30 | (bytes[13]&0x0F));
 
     // Code
     //0
-    ch = String.fromCharCode(0x40 | ((bytes[12]&0xF8) >> 3));
+    ch = String.fromCharCode(0x40 | ((bytes[14]&0xF8) >> 3));
     code += ch=="_"?"?":ch;
     //1
-    ch = String.fromCharCode(0x40 | (((bytes[12]&0x07) << 2)|((bytes[13]&0xC0) >> 6)));
+    ch = String.fromCharCode(0x40 | (((bytes[14]&0x07) << 2)|((bytes[15]&0xC0) >> 6)));
     code += ch=="_"?"?":ch;
     //1
-    ch = String.fromCharCode(0x40 | (((bytes[13]&0x3E) >> 1)));
+    ch = String.fromCharCode(0x40 | (((bytes[15]&0x3E) >> 1)));
     code += ch=="_"?"?":ch;
     //3
-    ch = String.fromCharCode(0x40 | (((bytes[13]&0x01) << 4)|((bytes[14]&0xF0) >> 4)));
+    ch = String.fromCharCode(0x40 | (((bytes[15]&0x01) << 4)|((bytes[16]&0xF0) >> 4)));
     code += ch=="_"?"?":ch;
     //4
-    ch = String.fromCharCode(0x40 | (((bytes[14]&0x0F) << 1)|((bytes[15]&0x80) >> 7)));
+    ch = String.fromCharCode(0x40 | (((bytes[16]&0x0F) << 1)|((bytes[17]&0x80) >> 7)));
     code += ch=="_"?"?":ch;
     //5
-    ch = String.fromCharCode(0x40 | (((bytes[15]&0x7C) >> 2)));
+    ch = String.fromCharCode(0x40 | (((bytes[17]&0x7C) >> 2)));
     code += ch=="_"?"?":ch;
     //6
-    ch = String.fromCharCode(0x40 | (((bytes[15]&0x03) << 3)|((bytes[16]&0xE0) >> 5)));
+    ch = String.fromCharCode(0x40 | (((bytes[17]&0x03) << 3)|((bytes[18]&0xE0) >> 5)));
     code += ch=="_"?"?":ch;
     //7
-    ch = String.fromCharCode(0x40 | (bytes[16]&0x1F));
+    ch = String.fromCharCode(0x40 | (bytes[18]&0x1F));
     code += ch=="_"?"?":ch;
 
     cipher = cipher.replace(/@/g,"");
@@ -664,7 +700,7 @@ $(function(){
       "Key Pieces: "+kPieceStr+"\n"+
       "Figures out what your nuclear launch code is from 8 silo code pieces and a portion of the keyword from the Enclave bunker.");
     $('meta[name="og:description"]').attr("content",
-      "Cipher: "+dat.cipher+"\n"+
+      "Cipher: "+$.QueryString["cipher"]+"\n"+
       "Key Pieces: "+kPieceStr+"\n"+
       "Figures out what your nuclear launch code is from 8 silo code pieces and a portion of the keyword from the Enclave bunker.");
   } else if($.QueryString["q"]) {

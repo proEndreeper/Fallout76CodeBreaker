@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-if(process.argv.length<4)
+if(process.argv.length<3)
 {
   console.error("Invalid usage!");
   console.log("Usage: node generate-codes.js words.txt")

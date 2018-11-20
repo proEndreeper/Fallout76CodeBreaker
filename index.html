@@ -13,16 +13,17 @@
 		<link rel="stylesheet" type="text/css" href="jquery-ui.min.css"/>
 		<!-- Metadata -->
 		<meta name="title" content="Fallout 76 Code Breaker">
+		<meta name="og:title" content="Fallout 76 Code Breaker">
 		<meta name="description" content="Figures out what your nuclear launch code is from 8 silo code pieces and a portion of the keyword from the Enclave bunker.">
 		<meta name="og:description" content="Figures out what your nuclear launch code is from 8 silo code pieces and a portion of the keyword from the Enclave bunker.">
-		<meta name="keywords" content="fallout 76,fallout,76,code,breaker,solver,cracker,silo,code,piece,keyword,solver,proxendreeper">
+		<meta name="keywords" content="fallout 76,fallout,76,fallout code,cypher,keyword cypher,fallout cypher,decrypt codes,decrypt nuclear codes,decypt,cipher,fallout cipher,nuclear launch code,fo76codebreaker,fo76,codebreaker,launch code,launch codes,launch,nuclear,code,breaker,solver,cracker,silo,code,piece,keyword,solver,proxendreeper">
 		<meta name="author" content="Devon Schneider (ProxEndreeeper), fo76codebreaker@icyfyr.us">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta name="source-code" content="https://github.com/proEndreeper/Fallout76CodeBreaker">
 		<meta name="revisit-after" content="7 days">
 		<meta name="subject" content="Fallout 76 Code Breaker">
 		<meta name="language" content="EN">
-		<meta name="revised" content="2018-11-14T16:35:41.858Z">
+		<meta name="revised" content="2018-11-20T16:15:56+00:00">
 		<link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
 		<link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
 		<link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
@@ -81,8 +82,9 @@
 			<form class="mono" id="nukeCodes">
 				<h1>Known Cipher</h1>
 				<p>This is the word you can see parts of in the Enclave base, please replace missing letters with a question mark (?).</p>
-				<p>If you have a Nuclear Keycard and have all the code pieces, but don't know your keyword, just type all letters as question marks (?), this will take some time, as the application would have to unscramble approximately <span class="keywordCount"></span> anagrams. However, only 2000 keywords will be processed at a maximum, as otherwise this page becomes highly unresponsive due to how many keywords there are.</p>
-				<input type="text" maxlength=11 class="cipherKeyword bad" data-inputmask="'alias': 'cipher'" name="kCipher" placeholder="Known Cipher">
+				<p>If you have a Nuclear Keycard and have all the code pieces, but don't know your keyword, just type all letters as question marks (?), this will take some time, as the application would unscramble <span class="keywordCount">-</span> anagrams.</p>
+				<p>You need one Nuclear Keycard per code attempt</p>
+				<input type="text" maxlength=16 class="cipherKeyword bad" data-inputmask="'alias': 'cipher'" name="kCipher" placeholder="Known Cipher">
 				<h1>Code Pieces</h1>
 				<p>Please type up all of your code pieces here.</p>
 				<input type="text" class="launchCode bad" data-inputmask="'alias': 'launchCode'" name="kCode0">

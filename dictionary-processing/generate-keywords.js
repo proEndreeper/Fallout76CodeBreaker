@@ -39,14 +39,14 @@ fs.readFile(process.argv[2], 'utf8', function(err, contents)
 
   for(var i=0;i<data.length;i++)
   {
-    if(data[i].replace(/[^a-zA-Z]+/g,"")==data[i] && data[i].length>=1 && data[i].length<=12 && alluniq(data[i]) && words.indexOf(data[i])<0)
+    if(data[i].replace(/[^a-zA-Z]+/g,"")==data[i] && data[i].length>=10 && data[i].length<=16 && words.indexOf(data[i])<0 && alluniq(data[i]))
     {
       count++;
       words.push(data[i].toLowerCase());
     }
   }
 
-  fs.writeFileSync("keywords.json", JSON.stringify(words.sort()));
+  console.log("Found "+words.length+" 16-letter or less words!");
 
-  console.log("Found "+words.length+" 12-letter or less words!");
+  fs.writeFileSync("keywords.json", JSON.stringify(words.sort()));
 });
