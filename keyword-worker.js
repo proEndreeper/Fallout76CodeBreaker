@@ -286,7 +286,13 @@ addEventListener("message",(ev)=>{
       postMessage({cmd:"ANAGRAM",params:[keyword,code]});
       queue.push([keyword,code,eAnagram]);
     }
-    spawnWorkers();
+
+    if(matchedKeywords.length<1) {
+      postMessage({cmd:"DONE",params:[]});
+      ready = true;
+    } else {
+      spawnWorkers();
+    }
 
   }
 

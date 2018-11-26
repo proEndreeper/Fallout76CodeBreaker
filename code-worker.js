@@ -110,7 +110,7 @@ function setupUnscrambler()
 
         function doPermutation(i,permutation)
         {
-          if(i>=length-1) {
+          if(i>=length) {
             callback(null);
             return;
           }
@@ -118,7 +118,7 @@ function setupUnscrambler()
             k = i % 2 && c[i];
             p = permutation[i];
             permutation = permutation.substr(0,i)+permutation[k]+permutation.substr(i+1);
-            permutation = permutation.substr(0,k)+p+permutation.substr(k+1);[k];
+            permutation = permutation.substr(0,k)+p+permutation.substr(k+1);
             ++c[i];
             i = 1;
             if(binarySearch(codes,permutation)>-1)
