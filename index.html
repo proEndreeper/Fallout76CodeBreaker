@@ -41,38 +41,6 @@
 		<meta name="msapplication-TileColor" content="#82A7D6">
 		<meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
 		<meta name="theme-color" content="#82A7D6">
-		<!-- Global site tag (gtag.js) - Google Analytics -->
-		<script async src="https://www.googletagmanager.com/gtag/js?id=UA-129145730-1"></script>
-		<script>
-		  window.dataLayer = window.dataLayer || [];
-		  function gtag(){dataLayer.push(arguments);}
-		  gtag('js', new Date());
-
-		  gtag('config', 'UA-129145730-1');
-
-		  window['ga-disable-UA-129145730-1'] = true;
-		  function showOptout(event)
-		  {
-		  	event.preventDefault();
-		  	event.stopPropagation();
-			window['ga-disable-UA-129145730-1'] = true;
-
-			if(confirm("Opt in to Google Analytics on this website?\n\nNote:\nClicking OK opts you in if you were previousing opted out of Google Analytics.\nDoing anything else will opt you out of analytics."))
-		  	{
-		  		Cookies.set('optoutGA',false,{expires:7});
-		  	} else {
-		  		Cookies.set('optoutGA',true,{expires:7});
-		  	}
-
-			if(Cookies.get('optoutGA')=="false") {
-			  window['ga-disable-UA-129145730-1'] = false;
-		    }
-
-		    $("#optOutStatus").html(Cookies.get('optoutGA')=="true"?"(Opted out)":"(Opted in)");
-		    $("#optOutStatus").attr("state",Cookies.get('optoutGA')=="true"?"yes":"no");
-		    return false;
-		  }
-		</script>
 	</head>
 	<body>
 		<div class="main">
@@ -80,6 +48,15 @@
 			<hr />
 			<div id="warningText"></div>
 			<form class="mono" id="nukeCodes">
+				<h1 id="knownCodesTitle">This Week's Codes</h1>
+				<div style="display:none" id="knownCodes">
+					Valid from <span id="knownCodeStart"></span>
+					to <span id="knownCodeEnd"></span><br />
+					&nbsp;&nbsp;Silo Alpha: <span id="knownCodeAlpha"></span><br />
+					&nbsp;&nbsp;Silo Bravo: <span id="knownCodeBravo"></span><br />
+					Silo Charlie: <span id="knownCodeCharlie"></span><br /><br />
+					Report Launch Codes <a href="https://goo.gl/forms/oWfOGrg2eE3xfa2C3">here</a>.
+				</div>
 				<h1>Known Cipher</h1>
 				<p>This is the word you can see parts of in the Enclave base, please replace missing letters with a question mark (?).</p>
 				<p>If you have a Nuclear Keycard and have all the code pieces, but don't know your keyword, just type all letters as question marks (?), this will take some time, as the application would unscramble <span class="keywordCount">-</span> anagrams.</p>
@@ -106,7 +83,7 @@
 			<hr />
 			<div class="resultBody mono">
 				Share Link: <br />
-				<pre><a class="shareLink"></a></pre><br />
+				<pre class="no-background"><a class="shareLink"></a></pre><br />
 				Encoded Anagram: <span id="encodedAnagram"></span><br />
 				Max Workers: <span class="workersMax"></span><br />
 				Time Elapsed: <span class="timeCurrent"></span><br />
@@ -125,7 +102,6 @@
 		<div class="rsocialbuttons">
 			<a title="Info" target="fo76codebreaker-info" href="#" onclick="showDialog(event)"><span class="fas fa-info-circle"></span></a>
 		</div>
-		<div class="optOut"><a onclick="showOptout(event)" href="#"><span>Analytics Opt-In</span></a>&nbsp;<span id="optOutStatus"></span></div>
 		<div id="infoDialog">
 			<p>Requirements:</p>
 			<ul>
@@ -165,18 +141,5 @@ X-1 Y</pre>
 			<p>You then just need to read down the numbers from the top to get your nuclear launch code</p>
 			<p>In this case, the nuclear launch code is 82616801</p>
 		</div>
-		<script>
-		  if(typeof Cookies.get('optoutGA') === 'undefined')
-		  {
-		  	Cookies.set('optoutGA',true);
-		  }
-
-		  if(Cookies.get('optoutGA')=="false") {
-		    window['ga-disable-UA-129145730-1'] = false;
-	      }
-
-		  $("#optOutStatus").html(Cookies.get('optoutGA')=="true"?"(Opted out)":"(Opted in)");
-		  $("#optOutStatus").attr("state",Cookies.get('optoutGA')=="true"?"yes":"no");
-		</script>
 	</body>
 </html>

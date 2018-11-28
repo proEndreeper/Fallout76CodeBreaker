@@ -237,3 +237,15 @@ pre.no-background {
 	background:none;
 	border:0;
 }
+
+#knownCodesTitle
+{
+	text-decoration: none;
+	cursor:pointer;
+	color:white;
+}
+
+#knownCodesTitle:hover
+{
+	text-decoration:underline;
+}

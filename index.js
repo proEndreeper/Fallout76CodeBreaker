@@ -725,4 +725,88 @@ $(function(){
   $.getJSON("./keywords.json",data=>{
     $(".keywordCount").html(data.length);
   });
+
+  // Based on code from https://stackoverflow.com/a/6117889
+  // Returns ISO-8601 week number
+  function getWeekNumber(d)
+  {
+    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+    var yS = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+    return [d.getUTCFullYear(),Math.ceil((((d-yS)/86400000)+1)/7)];
+  }
+
+  // Relative to Fallout 76's launch date
+  function getRelativeWeek()
+  {
+    var wN = getWeekNumber(new Date());
+    return wN[1]+(wN[0]-2018)*53-(wN[0]==2018?46:47);
+  }
+
+  const DELAY_BETWEEN_CODE_UPDATES = 5*60*1000;
+
+  const SPREADHSEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRzW9RTZnMxx_6ejDMDenM6dkiLgVJQvFCJVaPYy_AVQvuiQpdZXqLUthjbJprGBHydULN9DiwxGtJu/pub?gid=32177490&single=true&output=csv";
+
+  var updateCodesTimeout = -1;
+  var lastUpdateToCodes = -1;
+
+  function updateCodes()
+  {
+    if(lastUpdateToCodes>-1) {
+      if(Date.now()-lastUpdateToCodes<Math.min(DELAY_BETWEEN_CODE_UPDATES/5,60000)) {
+        updateCodesTimeout = setTimeout(updateCodes,DELAY_BETWEEN_CODE_UPDATES);
+        return;
+      }
+    }
+    lastUpdateToCodes = Date.now();
+    $.get(SPREADHSEET_URL,(data)=>{
+      var dat = {},i,rows = data.split("\n"),row;
+      for(i=1;i<rows.length;i++)
+      {
+        row = rows[i].split(",");
+        dat[row[2]] = {
+          start:row[0],
+          end:row[1],
+          alpha:row[3],
+          bravo:row[4],
+          charlie:row[5]
+        };
+      }
+
+      window.codeData = dat;
+
+      var weekNo = getRelativeWeek();
+
+      var weekStart = new Date(1542067200000+(7*24*60*60*1000)*2).toLocaleDateString();
+      var weekEnd = new Date(1542067200000+(7*24*60*60*1000)*2+(6*24*60*60*1000)).toLocaleDateString();
+
+      $("#knownCodeStart").html(weekStart);
+      $("#knownCodeEnd").html(weekEnd);
+
+      var weekData = dat[weekNo];
+
+      if(!weekData) {
+        $("#knownCodeAlpha").html("Not Solved Yet");
+        $("#knownCodeBravo").html("Not Solved Yet");
+        $("#knownCodeCharlie").html("Not Solved Yet");
+      } else {
+        $("#knownCodeAlpha").html(weekData.alpha?weekData.alpha:"Not Solved Yet");
+        $("#knownCodeBravo").html(weekData.bravo?weekData.bravo:"Not Solved Yet");
+        $("#knownCodeCharlie").html(weekData.charlie?weekData.charlie:"Not Solved Yet");
+      }
+
+      updateCodesTimeout = setTimeout(updateCodes,DELAY_BETWEEN_CODE_UPDATES);
+    });
+  }
+
+  $("#knownCodesTitle").click(()=>{
+    if(updateCodesTimeout>-1) {
+      clearTimeout(updateCodesTimeout);
+      updateCodesTimeout=-1;
+    }
+    updateCodes();
+    $("#knownCodes").toggle(500);
+  });
+
+  updateCodes();
 });
