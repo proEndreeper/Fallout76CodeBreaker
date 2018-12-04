@@ -777,8 +777,8 @@ $(function(){
 
       var weekNo = getRelativeWeek();
 
-      var weekStart = new Date(1542067200000+(7*24*60*60*1000)*2).toLocaleDateString();
-      var weekEnd = new Date(1542067200000+(7*24*60*60*1000)*2+(6*24*60*60*1000)).toLocaleDateString();
+      var weekStart = new Date(1542067200000+(7*24*60*60*1000)*weekNo).toLocaleDateString();
+      var weekEnd = new Date(1542067200000+(7*24*60*60*1000)*weekNo+(6*24*60*60*1000)).toLocaleDateString();
 
       $("#knownCodeStart").html(weekStart);
       $("#knownCodeEnd").html(weekEnd);
