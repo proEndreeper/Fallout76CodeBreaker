@@ -12,14 +12,14 @@ $(function(){
   }
 
   const NUKECODE_REGEX = /^([a-z])\-([0-9])$/i;
-  const KEYWORD_REGEX = /^[a-z\?]{10,16}$/i;
+  const KEYWORD_REGEX = /^[a-zA-Z\?\_]{9,16}$/;
 
   function alluniq(str)
   {
     var used = {},i;
     for(i=0;i<str.length;i++)
     {
-      if(str[i]=="?") {
+      if(str[i]=="?" || str[i]=="_") {
         continue;
       }
       if(!used[str[i]])
@@ -35,7 +35,7 @@ $(function(){
 
   function isValidKeywordFilter(k)
   {
-    return KEYWORD_REGEX.test(k);// && alluniq(k);
+    return KEYWORD_REGEX.test(k) && alluniq(k);
   }
 
   function isCodeDuplicate(code_id)
@@ -339,7 +339,7 @@ $(function(){
       },
       'cipher': {
         autoUnmask:false,
-        regex: "[A-Za-z\?]{10,16}",
+        regex: KEYWORD_REGEX.toString().replace("/i","/").replace(/[\/\^\$]/g,""),
         oncomplete:function(e)
         {
           if(isValidKeywordFilter(e.target.value)) {
@@ -376,7 +376,7 @@ $(function(){
         alert("Please wait for the current code breaking to finish, or refresh the page.");
         return false;
       }
-      var keyword = $(".cipherKeyword").val();
+      var keyword = $(".cipherKeyword").val().replace(/_/g,"?");
       if(isValidKeywordFilter(keyword) && areCodesGood())
       {
         setTimeout(()=>{
@@ -440,7 +440,7 @@ $(function(){
 
   function generateShareLink()
   {
-    var cipher = $(".cipherKeyword").val();
+    var cipher = $(".cipherKeyword").val().replace(/_/g,"?");
     var numbers = processCode("01234567");
     var code = getEncodedAnagram();
     var shortVersion = "";
@@ -767,9 +767,9 @@ $(function(){
         dat[row[2]] = {
           start:row[0],
           end:row[1],
-          alpha:row[3],
-          bravo:row[4],
-          charlie:row[5]
+          alpha:row[3].replace(/[^0-9]/g,""),
+          bravo:row[4].replace(/[^0-9]/g,""),
+          charlie:row[5].replace(/[^0-9]/g,"")
         };
       }
 
