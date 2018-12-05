@@ -18,7 +18,7 @@ var keywords = [],
 
 loadJSON("./keywords.json",data=>{
   keywords = Array.from(JSON.parse(data));
-  loadJSON("./potential-codes.json",data=>{
+  loadJSON("./sorted-codes.json",data=>{
     codes=Array.from(JSON.parse(data));
     ready = true;
     postMessage({cmd:"READY",params:[]});
@@ -84,69 +84,20 @@ var workers = [];
 
 var queue = [];
 
-function getNextIndex()
-{
-  if(NUM_AVAILABLE < 1) {
-    return -1;
-  }
-  for(var i=0;i<options.max_workers;i++)
-  {
-    if(!(workers[i] instanceof Worker)) {
-      return i;
-    }
-  }
-  return -1;
-}
-
 const MAX_PERMUTATIONS = 8*7*6*5*4*3*2;
-
-function binarySearch(arr, target) {
-    let left = 0;
-    let right = arr.length - 1;
-    while (left <= right) {
-        const mid = left + Math.floor((right - left) / 2);
-        if (arr[mid] === target) {
-            return mid;
-        }
-        if (arr[mid] < target) {
-            left = mid + 1;
-        } else {
-            right = mid - 1;
-        }
-    }
-    return -1;
-}
 
 function benchmark()
 {
-  function unscrambleWord(word,callback)
+  function unscrambleWord(word,callback) 
   {
-    function permute(permutation) {
-      var length = permutation.length,
-          result = [permutation.slice()],
-          c = new Array(length).fill(0),
-          i = 1, k, p;
-
-      while (i < length) {
-        if (c[i] < i) {
-          k = i % 2 && c[i];
-          p = permutation[i];
-          permutation = permutation.substr(0,i)+permutation[k]+permutation.substr(i+1);
-          permutation = permutation.substr(0,k)+p+permutation.substr(k+1);[k];
-          ++c[i];
-          i = 1;
-          if(binarySearch(permutation)>-1)
-          {}
-          callback();
-        } else {
-          c[i] = 0;
-          ++i;
-        }
+    var sword = word.toLowerCase().split("").sort().join("");
+    if(codes[sword]!==undefined) {
+      for(var i=0;i<codes[sword].length;i++)
+      {
+        callback({num:genCode(codes[sword][i],word),word:codes[sword][i]});
       }
-      callback(null);
     }
-
-    permute(word);
+    callback(null);
   }
   var now = typeof(performance)!="undefined"?performance.now():Date.now();
   console.log("Performing benchmark...");
@@ -163,33 +114,58 @@ function benchmark()
 
 function spawnWorker()
 {
-  if(queue.length === 0 || NUM_AVAILABLE<=0) {
+  if(workers.length>=options.max_workers) {
     return false;
   }
-  var workData = queue.shift();
-  NUM_AVAILABLE--;
+  var worker;
   worker = new Worker("code-worker.js");
   workers.push(worker);
-  var keyword = workData[0];
-  var code = workData[1];
-  var eAnagram = workData[2];
-  //console.log(`Spawning code finding worker for keyword '${keyword}'.`);
-  postMessage({cmd:"START_KEYWORD",params:[keyword]})
-  var worker;
   worker.addEventListener("message",onMessage);
   worker.addEventListener("error",(ev)=>{console.log("An error occurred!")});
-  worker.id = keyword;
-  var msg = {id:keyword,cmd:"INIT",params:[code,eAnagram,options.delay]};
-  worker.postMessage(msg);
+  worker.id = "";
+  worker.ready=true;
   return true;
+}
+
+function updateWorker()
+{
+  if(queue.length === 0 || NUM_AVAILABLE<=0)
+  {
+    return;
+  }
+  NUM_AVAILABLE--;
+  var i,worker,workData;
+  var keyword,code,eAnagram,msg;
+  var success = false;
+  for(i=0;i<workers.length;i++)
+  {
+    worker = workers[i];
+    if(worker.ready) {
+      success=true;
+      workData = queue.shift();
+      keyword = workData[0];
+      code = workData[1];
+      eAnagram = workData[2];
+      postMessage({cmd:"START_KEYWORD",params:[keyword]});
+      worker.id = keyword;
+      worker.ready = false;
+      msg = {id:keyword,cmd:"INIT",params:[code,eAnagram,options.delay]};
+      worker.postMessage(msg);
+      break;
+    }
+  }
+  if(!success) {
+    console.log("Failed to update worker!");
+  }
 }
 
 function spawnWorkers()
 {
-  if(NUM_AVAILABLE<1) {
+  if(workers.length>=options.max_workers) {
     return false;
   }
   while(spawnWorker()){}
+  console.log("%d workers around.",workers.length);
   return true;
 }
 
@@ -209,10 +185,9 @@ function onMessage(ev)
     {
       if(workers[i] instanceof Worker && workers[i].id==msg.id) {
         found=true;
-        workers[i].terminate();
-        workers[i]=null;
+        workers[i].ready = true;
         NUM_AVAILABLE++;
-        setTimeout(spawnWorker,100);
+        updateWorker();
         break;
       }
     }
@@ -259,6 +234,10 @@ addEventListener("message",(ev)=>{
         NUM_AVAILABLE = Math.max(msg.params[1]-(options.max_workers-NUM_AVAILABLE),0);
       }
       options[msg.params[0]]=msg.params[1];
+      if(msg.params[0]=="max_workers")
+      {
+        spawnWorkers();
+      }
     }
     return;
   } else
@@ -291,7 +270,12 @@ addEventListener("message",(ev)=>{
       postMessage({cmd:"DONE",params:[]});
       ready = true;
     } else {
-      spawnWorkers();
+      var count = NUM_AVAILABLE;
+      console.log("Preparing %d workers",count);
+      for(var i=0;i<count;i++) 
+      {
+        updateWorker();
+      }
     }
 
   }

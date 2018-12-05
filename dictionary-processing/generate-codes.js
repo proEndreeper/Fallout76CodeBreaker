@@ -24,6 +24,7 @@ function alluniq(str)
 }
 
 fs.writeFileSync("potential-codes.json","");
+fs.writeFileSync("sorted-codes.json","");
 
 fs.readFile(process.argv[2], 'utf8', function(err, contents)
 {
@@ -39,14 +40,30 @@ fs.readFile(process.argv[2], 'utf8', function(err, contents)
 
   for(var i=0;i<data.length;i++)
   {
-    if(data[i].replace(/[^a-zA-Z]+/g,"")==data[i] && data[i].length==8 && alluniq(data[i]))
+    if(data[i].replace(/[^a-zA-Z]+/g,"")==data[i] && data[i].length==8 && alluniq(data[i].toLowerCase()))
     {
       count++;
       words.push(data[i].toLowerCase());
     }
   }
 
-  fs.writeFileSync("potential-codes.json", JSON.stringify(words.sort()));
+  words = words.sort();
 
-  console.log("Found "+count+" 8-letter words!");
+  console.log("Found %d 8-letter words!",count);
+
+  fs.writeFileSync("potential-codes.json", JSON.stringify(words));
+
+  var pairs = {};
+  var sword;
+  for(var i=0;i<words.length;i++)
+  {
+    sword = words[i].split("").sort().join("");
+    if(pairs[sword]===undefined)
+    {
+      pairs[sword] = [];
+    }
+    pairs[sword].push(words[i]);
+  }
+
+  fs.writeFileSync("sorted-codes.json", JSON.stringify(pairs));
 });

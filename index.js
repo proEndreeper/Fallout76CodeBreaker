@@ -12,7 +12,7 @@ $(function(){
   }
 
   const NUKECODE_REGEX = /^([a-z])\-([0-9])$/i;
-  const KEYWORD_REGEX = /^[a-zA-Z\?\_]{9,16}$/;
+  const KEYWORD_REGEX = /^[a-zA-Z\?]{6,16}$/;
 
   function alluniq(str)
   {
@@ -142,6 +142,7 @@ $(function(){
     $(".timeCurrent").html(timestamp.toFixed(3)+"s");
     $(".keywordsDone").html(sum);
     $(".keywordsTotal").html(max);
+    $(".codesFound").html(codesFound.count);
 
     if(sum==max) {
       $(".keyword").attr("state","done");
@@ -152,6 +153,7 @@ $(function(){
 
   function setStatus(txt)
   {
+    if(keywordCount<10000)
     $("#statusText").html(txt);
   }
 
@@ -186,19 +188,16 @@ $(function(){
   }
 
   var keywordCount = 0,keywordsDone = 0;
+  var keywordUpdateIntvl = 0;
   var working = false;
   var anagrams = [];
+  var codesFound = {count:0};
 
   var lastBenchCount = 0;
 
   function onMessage(ev){
     var msg = ev.data;
     var out = "";
-
-    if(msg.cmd == "ANAGRAM")
-    {
-      anagrams[msg.params[0]]=msg.params[1];
-    } else
 
     if(msg.cmd == "READY")
     {
@@ -212,6 +211,7 @@ $(function(){
       console.log("Got em keywords you were asking for, boss.");
       var i,kwords = msg.params[0];
       keywordCount = kwords.length;
+      keywordUpdateIntvl = Math.floor(keywordCount/1000);
       keywordsDone = 0;
       console.log("Found %d keywords.",keywordCount);
       console.log("\t"+kwords.join("\n\t"));
@@ -223,7 +223,8 @@ $(function(){
           out+="<br />";
         }
       }
-      $('#listKeywords').html(out);
+      if(keywordCount<=20000)
+        $('#listKeywords').html(out);
       updateDynamicProgress();
       setStatus("Processing keywords...");
     } else
@@ -238,7 +239,7 @@ $(function(){
     {
       keywordsDone++;
       updateKeyword(msg.params[0],"done");
-      updateDynamicProgress();
+      if(keywordsDone%keywordUpdateIntvl===0) updateDynamicProgress();
       setStatus(`Keyword '${msg.params[0]}' finished.`);
     } else 
 
@@ -253,7 +254,7 @@ $(function(){
     if(msg.cmd == "BENCHMARK_RESULT")
     {
       updateProgress(MAX_PERMUTATIONS,MAX_PERMUTATIONS);
-      var workerCount = Math.min(15,(msg.params[0]<20000?Math.ceil(10000/msg.params[0]):0)+1);
+      var workerCount = Math.min(100,(msg.params[0]<20000?Math.ceil(10000/msg.params[0]):0)+1);
       console.log("It took %d ms to permute one word.",msg.params[0]);
       console.log("This means that only %d workers can be spawned.",workerCount);
 
@@ -272,15 +273,22 @@ $(function(){
     {
       var code = msg.params[1];
       var keyword = msg.params[0];
-      console.log("New code '%s' was discovered from keyword '%s'!",code.num,keyword);
+      if(codesFound[code.num]===true) {
+        return;
+      }
+      codesFound.count++;
+      codesFound[code.num] = true;
+      //console.log("New code '%s' was discovered from keyword '%s'!",code.num,keyword);
       $("#listLaunchCodes").append(`<span>'${code.word}'[${keyword}] produced the code '${processCode(code.num)}'</span><br />`);
-      setStatus(`Code! ${code.word}[${keyword}]: '${code.text}' (${processCode(code.num)}).`);
+      //setStatus(`Code! ${code.word}[${keyword}]: '${code.text}' (${processCode(code.num)}).`);
+      codesFound.firstDone = true;
     } else
 
     if(msg.cmd == "DONE")
     {
       working=false;
       setStatus("Finished!");
+      updateDynamicProgress();
       updateProgress(0,0);
       $(".cipherKeyword").prop("disabled",false);
       $(".launchCode").prop("disabled",false);
@@ -304,14 +312,14 @@ $(function(){
   });
 
   $(document).ready(function(){
-    if(!browserMeta.isChromiumBased) 
-    {
-      $("#warningText").html("<span style='color:#C00'>Warning:</span><br />"+
-                             "This application works best in a chromium based browser.<br />"+
-                             "This is due to how they handle WebWorkers.<br />"+
-                             "Expect mild freezing of the application during extensive<br />"+
-                             "work (e.g. more than double your workers in keywords)");
-    }
+    // if(!browserMeta.isChromiumBased) 
+    // {
+    //   $("#warningText").html("<span style='color:#C00'>Warning:</span><br />"+
+    //                          "This application works best in a chromium based browser.<br />"+
+    //                          "This is due to how they handle WebWorkers.<br />"+
+    //                          "Expect mild freezing of the application during extensive<br />"+
+    //                          "work (e.g. more than double your workers in keywords)");
+    // }
     Inputmask.extendAliases({
       'launchCode': {
         autoUnmask:false,
@@ -389,6 +397,7 @@ $(function(){
         },500);
         updateShareLink();
         start = Date.now();
+        codesFound = {count:0};
         $(".info > p").show();
         keywordCount=0;
         $("#listLaunchCodes").html("");

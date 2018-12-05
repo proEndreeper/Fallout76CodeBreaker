@@ -39,7 +39,7 @@ fs.readFile(process.argv[2], 'utf8', function(err, contents)
 
   for(var i=0;i<data.length;i++)
   {
-    if(data[i].replace(/[^a-zA-Z]+/g,"")==data[i] && data[i].length>=9 && words.indexOf(data[i].toLowerCase())<0 && alluniq(data[i].toLowerCase()))
+    if(data[i].replace(/[^a-zA-Z]+/g,"")==data[i] && data[i].length>=6 && words.indexOf(data[i].toLowerCase())<0 && alluniq(data[i].toLowerCase()))
     {
       count++;
       words.push(data[i].toLowerCase());
